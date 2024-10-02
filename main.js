@@ -16,6 +16,18 @@ const helper = new THREE.AxesHelper(10); // add helpers
 
 scene.add(helper)
 
+// add music  -> commented for later
+/*  const listener = new THREE.AudioListener();
+ camera.add(listener);
+ const sound = new THREE.Audio(listener);
+ const audioLoader = new THREE.AudioLoader();
+ audioLoader.load('/OuterWilds.mp3', (buffer) => {
+     sound.setBuffer(buffer);
+     sound.setLoop(true); 
+     sound.setVolume(0.3); 
+     sound.play(); 
+ }); */
+
 
 //Add some lights -> provisional  
 const ambientLight = new THREE.AmbientLight(0x000000); // Soft white light
