@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { createTurbine } from './components/drone';
+import { createTurbine, createBlade } from './components/drone';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.z += 5; //starting pos for camera
+camera.position.z += 10; //starting pos for camera
 camera.position.y += 5;
 
 const renderer = new THREE.WebGLRenderer();
@@ -17,7 +19,7 @@ const helper = new THREE.AxesHelper(10); // add helpers
 scene.add(helper)
 
 // add music  -> commented for later
-/*  const listener = new THREE.AudioListener();
+ const listener = new THREE.AudioListener();
  camera.add(listener);
  const sound = new THREE.Audio(listener);
  const audioLoader = new THREE.AudioLoader();
@@ -26,7 +28,7 @@ scene.add(helper)
      sound.setLoop(true); 
      sound.setVolume(0.3); 
      sound.play(); 
- }); */
+ }); 
 
 
 //Add some lights -> provisional  
@@ -44,11 +46,6 @@ scene.add(turbine);
 renderer.setAnimationLoop(animate); //animation loop
 
 
-
-
-
-
-
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -61,5 +58,10 @@ function animate(){
 	renderer.render( scene, camera );
 }
 
+
+const propellerBlade = createBlade();
+
+// Add the propeller blade to the scene
+scene.add(propellerBlade);
 
 

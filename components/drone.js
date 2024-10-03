@@ -1,13 +1,22 @@
 
 import * as THREE from 'three';
-import { shininess } from 'three/webgpu';
+
+    /* provisional settings only! */
+    const phongSettings = {
+        color : 0x696c77,
+        emissive : 0x191515,
+        specular: 0xf4f0f0,
+        shininess : 28.5,
+        side: THREE.DoubleSide,
+        opacity  : 0.88
+    }
 
 
 export function createTurbine(){
     //constants for wing
     const outerRadius = 1;
     const innerRadius = 0.90;
-    const wheelThickness = 0.50;
+    const wheelThickness = 0.330;
     const axisRadius = 0.2;
     const axisThickness = 0.1;
 
@@ -30,15 +39,7 @@ export function createTurbine(){
         bevelEnabled: true,
         bevelSize: 0.05,
     };
-    /* provisional settings only! */
-    const phongSettings = {
-        color : 0x696c77,
-        emissive : 0x191515,
-        specular: 0xf4f0f0,
-        shininess : 28.5,
-        side: THREE.DoubleSide,
-        opacity  : 0.88
-    }
+
 
     // Extrude the shape and add to scene
     const wheelGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
@@ -59,5 +60,86 @@ export function createTurbine(){
     const turbineGroup = new THREE.Group();
     turbineGroup.add(wheel);
     turbineGroup.add(axis);
+    turbineGroup.scale.set(3.6,3.6,3.6);
     return turbineGroup;
+}
+
+
+export function createBlade(){
+// Create the blade geometry
+const bladeGeometry = createBladeGeometry();
+// Create a material and mesh for the blade
+const bladeMaterial = new THREE.MeshPhongMaterial(phongSettings);
+const propellerBlade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+
+// Rotate the blade to lie flat
+propellerBlade.rotation.x = Math.PI / 2;
+propellerBlade.scale.set(0.1,0.1);
+propellerBlade.position.x = 0;
+propellerBlade.position.y = 0;
+propellerBlade.position.z = 0;
+return propellerBlade;
+
+}
+
+// Function to create a propeller blade geometry using cubic Bézier curves
+function createBladeGeometry() {
+    const curves = [];
+
+    // Define control points
+    const controlPoints = [
+        [new THREE.Vector3( 16.9664 - 16.9664 ,42.757 - 42.757,0), //
+            new THREE.Vector3(16.9619 - 16.9664, 42.8656 - 42.757,0), 
+            new THREE.Vector3(14.3578 - 16.9664,16.039 - 42.757,0),
+            new THREE.Vector3(14.4803 - 16.9664, 14.4072 - 42.757 ,0)],
+            
+        [new THREE.Vector3(14.4803 - 16.9664, 14.4072 - 42.757,0),
+            new THREE.Vector3(14.5645 - 16.9664,12.8226 - 42.757,0),
+            new THREE.Vector3(15.3351 - 16.9664,11.6765 - 42.757,0),
+            new THREE.Vector3(16.3417 - 16.9664,11.6413 - 42.757,0)],
+
+        [new THREE.Vector3(16.3417 - 16.9664,11.6413 - 42.757 ,0),
+            new THREE.Vector3(17.0891 - 16.9664,11.6152 - 42.757,0),
+            new THREE.Vector3(17.6438 - 16.9664,11.5191 - 42.757,0),
+            new THREE.Vector3(18.694 - 16.9664, 12.5209 - 42.757 ,0)],
+        [new THREE.Vector3(18.694 - 16.9664, 12.5209- 42.757 ,0),
+            new THREE.Vector3(24.1383 - 16.9664, 19.7426 - 42.757,0),
+            new THREE.Vector3(16.9831 - 16.9664,42.7792 - 42.757,0),
+            new THREE.Vector3(16.9664 - 16.9664,42.757 - 42.757,0)]
+
+    ];
+    // Create curves from control points
+    for (const points of controlPoints) {
+        const bezierCurve = new THREE.CubicBezierCurve3(points[0], points[1], points[2], points[3]);
+        curves.push(bezierCurve);
+    }
+    // Sample points along the curves to create the shape
+    const shapePoints = [];
+    const numPoints = 1000; // Number of samples per curve
+
+    curves.forEach(curve => {
+        for (let j = 0; j <= numPoints; j++) {
+            const t = j / numPoints;
+            const point = curve.getPoint(t);
+            shapePoints.push(point);
+        }
+    });
+
+    // Create a shape from the sampled points
+    const shape = new THREE.Shape();
+    shape.moveTo(shapePoints[0].x, shapePoints[0].y); // Start the shape at the first point
+
+    // Create line segments between sampled points
+    for (let i = 1; i < shapePoints.length; i++) {
+        shape.lineTo(shapePoints[i].x, shapePoints[i].y);
+    }
+
+    // Create geometry from the shape and optionally extrude it
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: 0.1, // Thickness of the shape
+        bevelEnabled: false
+    });
+
+
+    return geometry;
 }
