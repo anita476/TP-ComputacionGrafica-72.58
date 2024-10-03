@@ -2,24 +2,24 @@
 import * as THREE from 'three';
 
     /* provisional settings only! */
-    const phongSettings = {
+const phongSettings = {
         color : 0x696c77,
         emissive : 0x191515,
         specular: 0xf4f0f0,
         shininess : 28.5,
         side: THREE.DoubleSide,
         opacity  : 0.88
-    }
-
-
-export function createTurbine(){
+}
     //constants for wing
-    const outerRadius = 1;
-    const innerRadius = 0.90;
-    const wheelThickness = 0.330;
-    const axisRadius = 0.2;
-    const axisThickness = 0.1;
+const outerRadius = 1.1;
+const innerRadius = 1;
+const wheelThickness = 0.330;
+const axisRadius = 0.2;
+const axisThickness = 0.1;
 
+
+//Turbine container creation
+export function createTurbine(){
     // circular containment
     const shape = new THREE.Shape();
     shape.arcLengthDivisions = 100;
@@ -63,26 +63,22 @@ export function createTurbine(){
     turbineGroup.scale.set(3.6,3.6,3.6);
     return turbineGroup;
 }
-
-
-export function createBlade(){
+//Helix creation
+function createBlade(){
 // Create the blade geometry
 const bladeGeometry = createBladeGeometry();
 // Create a material and mesh for the blade
 const bladeMaterial = new THREE.MeshPhongMaterial(phongSettings);
 const propellerBlade = new THREE.Mesh(bladeGeometry, bladeMaterial);
 
-// Rotate the blade to lie flat
-propellerBlade.rotation.x = Math.PI / 2;
+// Transform the blade to starting point
+propellerBlade.rotation.z = Math.PI /2;
 propellerBlade.scale.set(0.1,0.1);
 propellerBlade.position.x = 0;
 propellerBlade.position.y = 0;
 propellerBlade.position.z = 0;
 return propellerBlade;
-
 }
-
-// Function to create a propeller blade geometry using cubic Bézier curves
 function createBladeGeometry() {
     const curves = [];
 
@@ -136,10 +132,24 @@ function createBladeGeometry() {
 
     // Create geometry from the shape and optionally extrude it
     const geometry = new THREE.ExtrudeGeometry(shape, {
-        depth: 0.1, // Thickness of the shape
+        depth: 0.3, // Thickness of the shape
         bevelEnabled: false
     });
-
-
     return geometry;
 }
+export function createBladeGroup(){
+    const refCirc =  new THREE.EllipseCurve(0,0,axisRadius,axisRadius);
+
+    const bladeGroup = new THREE.Group;
+    for(var i = 0; i < 1 ; i+= (1/8)){
+        
+        const position = refCirc.getPointAt(i);
+        const blade = createBlade();
+        blade.position.set(position.x, position.y, 0);
+        blade.rotation.z += Math.PI * i*2;
+        bladeGroup.add(blade); 
+    }
+    bladeGroup.rotation.x = Math.PI/2;
+    return bladeGroup;
+}
+
