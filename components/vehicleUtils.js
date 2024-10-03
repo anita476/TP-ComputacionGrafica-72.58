@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
     /* provisional settings only! */
@@ -16,7 +15,8 @@ const innerRadius = 1;
 const wheelThickness = 0.330;
 const axisRadius = 0.2;
 const axisThickness = 0.1;
-
+const totalBodyLength = 2;
+const bodyHeight = 1;
 
 //Turbine container creation
 export function createTurbine(){
@@ -111,7 +111,7 @@ function createBladeGeometry() {
     }
     // Sample points along the curves to create the shape
     const shapePoints = [];
-    const numPoints = 1000; // Number of samples per curve
+    const numPoints = 50; // Number of samples per curve
 
     curves.forEach(curve => {
         for (let j = 0; j <= numPoints; j++) {
@@ -148,10 +148,44 @@ export function createBladeGroup(){
         const blade = createBlade();
         blade.position.set(position.x, position.y, 0);
         blade.rotation.z += Math.PI * i*2;
-        console.log(blade);
         bladeGroup.add(blade); 
     }
     bladeGroup.rotation.x = Math.PI/2;
     return bladeGroup;
 }
 
+
+export function createBody() {
+        const points = [
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(bodyHeight/2, bodyHeight/2, 0),
+            new THREE.Vector3(totalBodyLength - bodyHeight/2, bodyHeight/2, 0),
+            new THREE.Vector3(totalBodyLength, 0, 0),
+            new THREE.Vector3(totalBodyLength - bodyHeight/2, -(bodyHeight/2), 0),
+            new THREE.Vector3(bodyHeight/2, -(bodyHeight/2), 0),
+            new THREE.Vector3(0, 0, 0)
+        ];
+
+    // Create a shape for the cross-section
+    const shape = new THREE.Shape(points);
+
+    // Extrude settings
+    const extrudeSettings = {
+        steps: 100,
+        bevelEnabled: false,
+        depth:2 ,
+        
+    };
+
+    // Create the geometry
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+    // Create material
+    const material = new THREE.MeshPhongMaterial(
+    phongSettings);
+
+    // Create mesh
+    const bodyMesh = new THREE.Mesh(geometry, material);
+
+    return bodyMesh;
+}
