@@ -144,9 +144,11 @@ export function createBladeGroup(){
     for(var i = 0; i < 1 ; i+= (1/8)){
         
         const position = refCirc.getPointAt(i);
+        console.log(position);
         const blade = createBlade();
         blade.position.set(position.x, position.y, 0);
         blade.rotation.z += Math.PI * i*2;
+        console.log(blade);
         bladeGroup.add(blade); 
     }
     bladeGroup.rotation.x = Math.PI/2;

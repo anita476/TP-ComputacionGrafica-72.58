@@ -48,18 +48,18 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
+const turbine = new turbineGroup();
 
 function animate(){
     requestAnimationFrame( animate );
-    turbine.animationVertical(0.01);
+    turbine.animationHorizontal(0.1);
 	orbitcontrols.update();
 	renderer.render( scene, camera );
 }
 
 
-const turbine = new turbineGroup();
 
 // Add the propeller blade to the scene
-turbine.turnBladesVertical();
+//turbine.turnBladesVertical();
 scene.add(turbine);
 

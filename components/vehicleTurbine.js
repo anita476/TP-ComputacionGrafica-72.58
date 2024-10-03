@@ -30,16 +30,12 @@ class turbineGroup extends THREE.Group{
     }
     animationHorizontal(rotationSpeed){
         if(!this.isVertical){
-        this.blades.children.forEach(child => {
-            child.rotation.z += rotationSpeed;
-            });
+        this.blades.rotation.z += rotationSpeed;
         }
     }
     animationVertical(rotationSpeed){
         if(this.isVertical){
-        this.blades.children.forEach(child => {
-            child.rotation.y += rotationSpeed;
-            });
+        this.blades.rotation.z -= rotationSpeed;
         }
     }
     
