@@ -5,8 +5,7 @@ import {createBladeGroup , createTurbine } from './vehicleUtils.js';
 
 
 
-class turbineGroup extends THREE.Group{
-    
+class Turbine extends THREE.Group{
     constructor(){
         super();
         this.blades = createBladeGroup();
@@ -41,4 +40,4 @@ class turbineGroup extends THREE.Group{
     
 }
 
-export {turbineGroup};
+export {Turbine};

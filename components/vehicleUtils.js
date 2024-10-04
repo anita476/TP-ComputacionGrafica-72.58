@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
     /* provisional settings only! */
 const phongSettings = {
@@ -19,6 +18,9 @@ const axisThickness = 0.1;
 const totalBodyLength = 2;
 const bodyHeight = 1;
 const bodyDepth = 2;
+const ring1Depth = 0.1;
+const ring2Depth = 0.3;
+const girth = 0.10;
 
 //Turbine container creation
 export function createTurbine(){
@@ -146,7 +148,6 @@ export function createBladeGroup(){
     for(var i = 0; i < 1 ; i+= (1/8)){
         
         const position = refCirc.getPointAt(i);
-        console.log(position);
         const blade = createBlade();
         blade.position.set(position.x, position.y, 0);
         blade.rotation.z += Math.PI * i*2;
@@ -253,4 +254,58 @@ export function createBody() {
     
     return bodyGroup; 
 
+}
+
+export function createBodyRings(){
+
+        // Create the outer shape
+        const outerShape = new THREE.Shape();
+        outerShape.moveTo(0,0,0);
+        outerShape.lineTo(bodyHeight/2+ girth,bodyHeight/2 + girth, 0);
+        outerShape.lineTo(totalBodyLength - bodyHeight/2 + girth, bodyHeight/2 + girth,0);
+        outerShape.lineTo(totalBodyLength+2* girth,0,0);
+        outerShape.lineTo(totalBodyLength-bodyHeight/2 + girth, -(bodyHeight/2 + girth),0);
+        outerShape.lineTo(bodyHeight/2+ girth,-(bodyHeight/2 + girth), 0);
+        outerShape.lineTo(0,0,0);
+        outerShape.closePath();
+        // Create the inner shape (hole)
+        const innerShape = new THREE.Path();
+        innerShape.moveTo(girth, 0, 0);
+        innerShape.lineTo(girth + bodyHeight/2, bodyHeight/2);
+        innerShape.lineTo(totalBodyLength + girth - bodyHeight/2, bodyHeight/2,0);
+        innerShape.lineTo(totalBodyLength + girth , 0);
+        innerShape.lineTo(totalBodyLength + girth - bodyHeight/2, -(bodyHeight/2),0);
+        innerShape.lineTo(girth + bodyHeight/2, -(bodyHeight/2),0);
+        innerShape.lineTo(girth,0,0);
+        innerShape.closePath();
+        outerShape.holes.push(innerShape);
+    
+        // Extrude settings
+        const extrudeSettings = {
+            steps: 1,
+            depth: ring1Depth,
+            bevelEnabled: true,
+            bevelSize: 0.05,
+        };
+        const extrudeSettings2 = {
+            steps: 1,
+            depth: ring2Depth,
+            bevelEnabled: true,
+            bevelSize: 0.05,
+        }
+        // Ring 1
+        const geometry1 = new THREE.ExtrudeGeometry(outerShape, extrudeSettings);
+        const material = new THREE.MeshPhongMaterial(phongSettings);
+        const ring1 = new THREE.Mesh(geometry1, material);
+        ring1.position.x -= girth;
+        ring1.position.z += 1.3;
+
+        const geometry2 = new THREE.ExtrudeGeometry(outerShape,extrudeSettings2);
+        const ring2 = new THREE.Mesh(geometry2,material);
+        ring2.position.x -= girth;
+        ring2.position.z += 0.2;
+        const ringGroup = new THREE.Group();
+        ringGroup.add(ring1);
+        ringGroup.add(ring2);
+        return ringGroup;
 }

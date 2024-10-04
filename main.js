@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { turbineGroup } from "/components/vehicleTurbine.js";
-import { createBody}    from "/components/vehicleUtils.js";
+import { Turbine } from "/components/Turbine.js";
+import { createBody, createBodyRings}    from "/components/vehicleUtils.js";
 
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -58,14 +58,15 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
-const turbine = new turbineGroup();
+//const turbine = new Turbine();
 //scene.add(turbine);
 
 
 const body = createBody();
 scene.add(body);
 
-
+const rings = createBodyRings();
+scene.add(rings);
 
 function animate(){
     requestAnimationFrame( animate );
