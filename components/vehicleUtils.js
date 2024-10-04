@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
     /* provisional settings only! */
 const phongSettings = {
@@ -17,6 +18,7 @@ const axisRadius = 0.2;
 const axisThickness = 0.1;
 const totalBodyLength = 2;
 const bodyHeight = 1;
+const bodyDepth = 2;
 
 //Turbine container creation
 export function createTurbine(){
@@ -154,9 +156,8 @@ export function createBladeGroup(){
     return bladeGroup;
 }
 
-
 export function createBody() {
-        const points = [
+    const points = [
             new THREE.Vector3(0, 0, 0),
             new THREE.Vector3(bodyHeight/2, bodyHeight/2, 0),
             new THREE.Vector3(totalBodyLength - bodyHeight/2, bodyHeight/2, 0),
@@ -173,19 +174,83 @@ export function createBody() {
     const extrudeSettings = {
         steps: 100,
         bevelEnabled: false,
-        depth:2 ,
-        
+        depth:bodyDepth,  
     };
-
-    // Create the geometry
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-
-    // Create material
     const material = new THREE.MeshPhongMaterial(
     phongSettings);
-
-    // Create mesh
     const bodyMesh = new THREE.Mesh(geometry, material);
+    const bodyGroup = new THREE.Group;
+    bodyGroup.add(bodyMesh);
 
-    return bodyMesh;
+    
+    const windshieldFrontShape = new THREE.Shape();
+    windshieldFrontShape.moveTo(0 ,bodyHeight/2,0);
+    windshieldFrontShape.lineTo( bodyHeight/2,bodyHeight,0);
+    windshieldFrontShape.lineTo( bodyHeight/2,0,0);
+    windshieldFrontShape.lineTo( 0 ,bodyHeight/2,0);
+    windshieldFrontShape.closePath();
+    const extrudeSettingsWindshield = {
+        steps: 100,
+        bevelEnabled: false,
+        depth:bodyDepth/2,  
+        
+    };
+    const windshieldFrontGeo = new THREE.ExtrudeGeometry(windshieldFrontShape, extrudeSettingsWindshield);
+    const materialWindshield = new THREE.MeshPhongMaterial(
+    phongSettings);
+    const windshieldFront = new THREE.Mesh(windshieldFrontGeo, materialWindshield);
+    windshieldFront.rotateY(Math.PI/2);
+    windshieldFront.position.z = bodyDepth+bodyHeight/2;
+    windshieldFront.position.x = bodyHeight/2;
+    windshieldFront.position.y -= bodyHeight/2;
+    bodyGroup.add(windshieldFront); 
+
+    //side windows 
+    const windowShape = new THREE.Shape();
+    windowShape.moveTo(-((bodyHeight/2) * Math.SQRT2)/2,0,0);
+    windowShape.lineTo(((bodyHeight/2) * Math.SQRT2)/2,0,0);
+    windowShape.lineTo(0,bodyHeight/2,0);
+    windowShape.lineTo(-((bodyHeight/2) * Math.SQRT2)/2,0,0);
+    windowShape.closePath();
+    const windowGeo = new THREE.ShapeGeometry(windowShape);
+    const windowMat = new THREE.MeshPhongMaterial(phongSettings);
+
+    const window1 = new THREE.Mesh(windowGeo,windowMat);
+    window1.rotateY(Math.PI/4);
+    window1.rotateX(-Math.PI/5);
+    window1.position.z += totalBodyLength + bodyHeight/4;
+    window1.position.x += (bodyDepth - bodyHeight/4); 
+    window1.scale.set(1,1.2,1);
+    bodyGroup.add(window1); 
+
+    const window2 = new THREE.Mesh(windowGeo, windowMat);
+    window2.position.z += totalBodyLength + bodyHeight/4;
+    window2.rotateY(-Math.PI /4);
+    window2.rotateX(-Math.PI/5);
+    window2.position.x += bodyHeight/4;
+    window2.scale.set(1,1.2,1);
+    bodyGroup.add(window2);
+
+    const window3 = new THREE.Mesh(windowGeo,windowMat);
+    
+    window3.position.z += totalBodyLength + bodyHeight/4;
+    window3.rotateZ(Math.PI);
+    window3.rotateY(Math.PI/4);
+    window3.rotateX(-Math.PI/5);
+    window3.position.x += bodyHeight/4;
+    window3.scale.set(1,1.2,1);
+    bodyGroup.add(window3);
+
+    const window4 = new THREE.Mesh(windowGeo, windowMat);
+    window4.position.z += totalBodyLength + bodyHeight/4;
+    window4.rotateZ(Math.PI);
+    window4.rotateY(-Math.PI/4);
+    window4.rotateX(-Math.PI/5);
+    window4.position.x += (totalBodyLength - bodyHeight/4);
+    window4.scale.set(1,1.2,1);
+    bodyGroup.add(window4);
+    
+    return bodyGroup; 
+
 }
