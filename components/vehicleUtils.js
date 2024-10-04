@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { Turbine } from './Turbine';
 
-    /* provisional settings only! */
+/* provisional settings only! */
 const phongSettings = {
         color : 0x696c77,
         emissive : 0x191515,
@@ -9,7 +10,7 @@ const phongSettings = {
         side: THREE.DoubleSide,
         opacity  : 0.88
 }
-    //constants for wing
+//constants for vehicle
 const outerRadius = 1.1;
 const innerRadius = 1;
 const wheelThickness = 0.330;
@@ -308,4 +309,90 @@ export function createBodyRings(){
         ringGroup.add(ring1);
         ringGroup.add(ring2);
         return ringGroup;
+}
+
+export function createPlanetScene(radius = 100) {
+    const scene = new THREE.Scene();
+    
+    // Create a sphere geometry for the planet
+    const planetGeometry = new THREE.SphereGeometry(radius, 64, 64);
+    const planetMaterial = new THREE.MeshPhongMaterial({
+        color: 0x999999,
+        side: THREE.DoubleSide,
+    });
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+    scene.add(planet);
+
+    // Create a group to hold the camera and any objects that should move with it
+    const cameraGroup = new THREE.Group();
+    scene.add(cameraGroup);
+
+    // Function to update position on the planet
+    function updatePosition(x, y, z) {
+        // Convert the position to spherical coordinates
+        const spherical = new THREE.Spherical().setFromVector3(new THREE.Vector3(x, y, z));
+        
+        // Set the radius to be slightly above the planet's surface
+        spherical.radius = radius + 2; // 2 units above the surface
+        
+        // Convert back to Cartesian coordinates
+        const newPosition = new THREE.Vector3().setFromSpherical(spherical);
+        
+        // Update the camera group position
+        cameraGroup.position.copy(newPosition);
+        
+        // Make the camera group look at the center of the planet
+        cameraGroup.lookAt(0, 0, 0);
+    }
+
+    return { scene, cameraGroup, updatePosition };
+}
+
+export function createTurbineSideGroup(){
+    //left side turbines
+    //front
+    const turbine1  = new Turbine();
+    turbine1.scale.set(0.50,0.50,0.50);
+    turbine1.position.y += wheelThickness/2;
+    const cone = new THREE.ConeGeometry(wheelThickness , outerRadius*2,32,1,false,0,Math.PI*2);
+    const coneMat = new THREE.MeshPhongMaterial(phongSettings);
+    const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.rotateZ(Math.PI/2);
+    turbineSupport1.position.x = outerRadius*2 + 0.6;
+    const turbineSide = new THREE.Group;
+    turbineSide.add(turbine1,turbineSupport1);
+    //back
+    const turbine3  = new Turbine();
+    turbine3.scale.set(0.50,0.50,0.50);
+    turbine3.position.y += wheelThickness/2;
+    const turbineSupport3 = new THREE.Mesh(cone,coneMat);
+    turbineSupport3.rotateZ(Math.PI/2);
+    turbineSupport3.position.x = outerRadius*2 + 0.6;
+    turbineSide.add(turbine3,turbineSupport3);
+
+
+    //right side turbines
+    //front
+    const turbine2 = new Turbine();
+    turbine2.scale.set(0.50,0.50,0.50);
+    turbine2.position.y += wheelThickness/2;
+    const turbineSupport2 = new THREE.Mesh(cone,coneMat);
+    turbineSupport2.rotateZ(-Math.PI/2);
+    turbineSupport2.position.x = -(outerRadius*2 + 0.6);
+    turbineSide.add(turbine2,turbineSupport2);
+
+    //back
+    const turbine4 = new Turbine();
+    turbine4.scale.set(0.50,0.50,0.50);
+    turbine4.position.y += wheelThickness/2;
+    const turbineSupport4 = new THREE.Mesh(cone,coneMat);
+    turbineSupport4.rotateZ(-Math.PI/2);
+    turbineSupport4.position.x = -(outerRadius*2 + 0.6);
+    turbineSide.add(turbine4,turbineSupport4);
+    turbineSide.scale.set(0.5,0.5,0.5);
+    return turbineSide;
+
+
+
+
 }

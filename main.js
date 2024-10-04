@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { Turbine } from "/components/Turbine.js";
-import { createBody, createBodyRings}    from "/components/vehicleUtils.js";
+import { createBody, createBodyRings, createPlanetScene, createTurbineSideGroup}    from "/components/vehicleUtils.js";
 
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 
-const scene = new THREE.Scene();
+//const scene = new THREE.Scene();
+const { scene, cameraGroup, updatePosition } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z += 10; //starting pos for camera
 camera.position.y += 5;
+cameraGroup.add(camera);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -68,10 +70,17 @@ scene.add(body);
 const rings = createBodyRings();
 scene.add(rings);
 
+const turbine = createTurbineSideGroup();
+scene.add(turbine);
+
 function animate(){
     requestAnimationFrame( animate );
 	orbitcontrols.update();
     //turbine.animationHorizontal(0.0015);
+
+    // Update position based on user input or other logic
+
+
 
 	renderer.render( scene, camera );
 }
