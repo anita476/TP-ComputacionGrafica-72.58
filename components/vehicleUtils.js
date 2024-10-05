@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Turbine } from './Turbine';
+import { Mesh } from 'three/webgpu';
 
 /* provisional settings only! */
 const phongSettings = {
@@ -19,9 +20,20 @@ const axisThickness = 0.1;
 const totalBodyLength = 2;
 const bodyHeight = 1;
 const bodyDepth = 2;
-const ring1Depth = 0.1;
+const ring1Depth = 0.1/2;
 const ring2Depth = 0.3;
 const girth = 0.10;
+
+
+const doorMaterial = new THREE.MeshPhongMaterial({
+    color: 0xcccccc,
+    emissive: 0x000000,
+    specular: 0xfdc4c4,
+    shininess : 100,
+    opacity : 0.75,
+    side:THREE.DoubleSide
+
+})
 
 //Turbine container creation
 export function createTurbine(){
@@ -299,7 +311,7 @@ export function createBodyRings(){
         const material = new THREE.MeshPhongMaterial(phongSettings);
         const ring1 = new THREE.Mesh(geometry1, material);
         ring1.position.x -= girth;
-        ring1.position.z += 1.3;
+        ring1.position.z += (totalBodyLength - ring1Depth*4);
 
         const geometry2 = new THREE.ExtrudeGeometry(outerShape,extrudeSettings2);
         const ring2 = new THREE.Mesh(geometry2,material);
@@ -348,51 +360,152 @@ export function createPlanetScene(radius = 100) {
     return { scene, cameraGroup, updatePosition };
 }
 
-export function createTurbineSideGroup(){
-    //left side turbines
-    //front
+export function createFrontLeft(){
     const turbine1  = new Turbine();
-    turbine1.scale.set(0.50,0.50,0.50);
+    turbine1.scale.set(0.15,0.15,0.15);
     turbine1.position.y += wheelThickness/2;
-    const cone = new THREE.ConeGeometry(wheelThickness , outerRadius*2,32,1,false,0,Math.PI*2);
+    const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
     const coneMat = new THREE.MeshPhongMaterial(phongSettings);
     const turbineSupport1 = new THREE.Mesh(cone,coneMat);
     turbineSupport1.rotateZ(Math.PI/2);
-    turbineSupport1.position.x = outerRadius*2 + 0.6;
-    const turbineSide = new THREE.Group;
-    turbineSide.add(turbine1,turbineSupport1);
-    //back
-    const turbine3  = new Turbine();
-    turbine3.scale.set(0.50,0.50,0.50);
-    turbine3.position.y += wheelThickness/2;
-    const turbineSupport3 = new THREE.Mesh(cone,coneMat);
-    turbineSupport3.rotateZ(Math.PI/2);
-    turbineSupport3.position.x = outerRadius*2 + 0.6;
-    turbineSide.add(turbine3,turbineSupport3);
+    turbineSupport1.position.x += ((outerRadius )* 7 - girth*3);
+    turbine1.add(turbineSupport1);
 
+    turbine1.position.y += (bodyHeight/4);
+    turbine1.position.x -= (bodyDepth/2);
+    turbine1.position.z += (bodyDepth);
+    turbine1.position.z -= ring1Depth * 4;
+    return turbine1;
+}
+export function createBackLeft (){
+    const turbine1  = new Turbine();
+    turbine1.scale.set(0.15,0.15,0.15);
+    turbine1.position.y += wheelThickness/2;
+    const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
+    const coneMat = new THREE.MeshPhongMaterial(phongSettings);
+    const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.rotateZ(Math.PI/2);
+    turbineSupport1.position.x += ((outerRadius )* 7 - girth*3);
+    turbine1.add(turbineSupport1);
 
-    //right side turbines
-    //front
-    const turbine2 = new Turbine();
-    turbine2.scale.set(0.50,0.50,0.50);
-    turbine2.position.y += wheelThickness/2;
-    const turbineSupport2 = new THREE.Mesh(cone,coneMat);
-    turbineSupport2.rotateZ(-Math.PI/2);
-    turbineSupport2.position.x = -(outerRadius*2 + 0.6);
-    turbineSide.add(turbine2,turbineSupport2);
+    turbine1.position.y += (bodyHeight/4);
+    turbine1.position.x -= (bodyDepth/2);
+    turbine1.position.z += ring2Depth;
+    return turbine1;
+}
 
-    //back
-    const turbine4 = new Turbine();
-    turbine4.scale.set(0.50,0.50,0.50);
-    turbine4.position.y += wheelThickness/2;
-    const turbineSupport4 = new THREE.Mesh(cone,coneMat);
-    turbineSupport4.rotateZ(-Math.PI/2);
-    turbineSupport4.position.x = -(outerRadius*2 + 0.6);
-    turbineSide.add(turbine4,turbineSupport4);
-    turbineSide.scale.set(0.5,0.5,0.5);
-    return turbineSide;
+export function createFrontRight(){
+    const turbine1  = new Turbine();
+    turbine1.scale.set(0.15,0.15,0.15);
+    turbine1.position.y += wheelThickness/2;
+    const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
+    const coneMat = new THREE.MeshPhongMaterial(phongSettings);
+    const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.rotateZ(-Math.PI/2);
+    turbineSupport1.position.x -= ((outerRadius )* 7 - girth*3);
+    turbine1.add(turbineSupport1);
 
+    turbine1.position.y += (bodyHeight/4);
+    turbine1.position.x += bodyDepth + bodyDepth/2;
+    turbine1.position.z += bodyDepth;
+    turbine1.position.z -= ring1Depth * 4;
+    return turbine1;
+}
+export function createBackRight(){
+    const turbine1  = new Turbine();
+    turbine1.scale.set(0.15,0.15,0.15);
+    turbine1.position.y += wheelThickness/2;
+    const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
+    const coneMat = new THREE.MeshPhongMaterial(phongSettings);
+    const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.rotateZ(-Math.PI/2);
+    turbineSupport1.position.x -= ((outerRadius )* 7 - girth*3);
+    turbine1.add(turbineSupport1);
 
+    turbine1.position.y += (bodyHeight/4);
+    turbine1.position.x += bodyDepth + bodyDepth/2;
+    turbine1.position.z += ring2Depth;
+    return turbine1;
+}
 
+function createlegGroup(){
+    const points = [];
+    for ( let i = 0; i < 10; i ++ ) {
+	    points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 10 + 5, ( i - 5 ) * 2 ) );
+    }
+    const footGeo = new THREE.LatheGeometry( points,4,0,2*Math.PI);
+    const material = new THREE.MeshPhongMaterial( phongSettings );
+    const foot = new THREE.Mesh( footGeo, material );
+    foot.rotateY(Math.PI/4);
+    foot.rotateZ(Math.PI);
+    foot.position.y -= (points[9].x - points[0].x); // my x axis is now y axis because i rotated the object
+    const legGeo = new THREE.BoxGeometry(7,2*(points[9].y - points[0].y),7,1,1,1);
+    const leg = new THREE.Mesh(legGeo,material);
+    leg.position.y += (points[9].y - points[0].y);
+    const legGroup = new THREE.Group();
+    legGroup.add(foot);
+    legGroup.add(leg);
+    legGroup.scale.set(0.01,0.01,0.01);
+    legGroup.position.y -= 2*(points[9].y - points[0].y)*legGroup.scale.x;
+    return legGroup;
+}
 
+export function FLLeg(){
+    const leg = createlegGroup();
+    leg.position.x += totalBodyLength/4;
+    leg.position.y -= (bodyHeight/2 + girth);
+    leg.position.z += bodyDepth - ring1Depth;
+    return leg;
+}
+export function BLLeg(){
+    const leg = createlegGroup();
+    leg.position.x += totalBodyLength/4;
+    leg.position.y -= (bodyHeight/2 + girth);
+    leg.position.z += ring2Depth;
+    return leg;
+}
+export function FRLeg(){
+    const leg = createlegGroup();
+    leg.position.x += totalBodyLength/4 * 3;
+    leg.position.y -= (bodyHeight/2 + girth);
+    leg.position.z += bodyDepth - ring1Depth;
+    return leg;
+}
+export function BRLeg(){
+    const leg = createlegGroup();
+    leg.position.x += totalBodyLength/4 * 3;
+    leg.position.y -= (bodyHeight/2 + girth);
+    leg.position.z += ring2Depth;
+    return leg;
+}
+
+export function createLeftDoor(){
+    const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    door1.position.x += (totalBodyLength/2 - totalBodyLength/8);
+    return door1;
+}
+export function createRightDoor(){
+    const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    const frame = totalBodyLength/(4*5);
+    door2.position.x += (totalBodyLength/2 + totalBodyLength/8);
+    //define door opening animation
+/*     const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; // Animation times in seconds
+    const values = [
+    door2.position.x, door2.position.y, door2.position.z, 
+    door2.position.x + frame, door2.position.y, door2.position.z,
+    door2.position.x + frame*2, door2.position.y, door2.position.z,
+    door2.position.x + frame * 3, door2.position.y, door2.position.z, 
+    door2.position.x + frame * 4, door2.position.y, door2.position.z,
+    door2.position.x + frame* 5, door2.position.y, door2.position.z 
+    ];
+    const positionTrack = new THREE.VectorKeyframeTrack('.position', times, values);
+    door2.animations.push(new THREE.AnimationClip( 'open', positionTrack ));
+ */
+    return door2;
+}
+
+export function createInside(){ // maybe a picture afterwards ? 
+    const inside = new Mesh(new THREE.PlaneGeometry(totalBodyLength/2 , bodyHeight * (2/3)) , new THREE.MeshStandardMaterial({color: 0x000000 , side:THREE.DoubleSide}));
+    inside.position.x += totalBodyLength/2;
+    return inside;
 }

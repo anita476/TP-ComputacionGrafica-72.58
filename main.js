@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { Turbine } from "/components/Turbine.js";
-import { createBody, createBodyRings, createPlanetScene, createTurbineSideGroup}    from "/components/vehicleUtils.js";
+import { createBody, createBodyRings, createPlanetScene}    from "/components/vehicleUtils.js";
 
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
+import { Vehicle } from './components/Vehicle';
 
 
 //const scene = new THREE.Scene();
@@ -64,14 +66,13 @@ function onWindowResize() {
 //scene.add(turbine);
 
 
-const body = createBody();
+const body = new Vehicle();
+body.scale.set(2,2,2);
+body.rotateY(Math.PI);
+
 scene.add(body);
 
-const rings = createBodyRings();
-scene.add(rings);
 
-const turbine = createTurbineSideGroup();
-scene.add(turbine);
 
 function animate(){
     requestAnimationFrame( animate );
