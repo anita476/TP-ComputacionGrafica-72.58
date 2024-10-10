@@ -56,14 +56,13 @@ window.addEventListener('resize', onWindowResize, false); //auto update size of 
 
 renderer.setAnimationLoop(animate); //animation loop
 
-
+window.addEventListener('click',onClick,false);
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
-//const turbine = new Turbine();
-//scene.add(turbine);
+
 
 
 const body = new Vehicle();
@@ -72,12 +71,15 @@ body.rotateY(Math.PI);
 
 scene.add(body);
 
-
+function onClick(){
+    body.turnBladesVertical();
+    body.animationVertical(0.3);
+    
+}
 
 function animate(){
-    requestAnimationFrame( animate );
 	orbitcontrols.update();
-    //turbine.animationHorizontal(0.0015);
+    //body.animationHorizontal(0.35);
 
     // Update position based on user input or other logic
 

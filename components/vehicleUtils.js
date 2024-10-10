@@ -39,19 +39,19 @@ const doorMaterial = new THREE.MeshPhongMaterial({
 export function createTurbine(){
     // circular containment
     const shape = new THREE.Shape();
-    shape.arcLengthDivisions = 100;
+    shape.arcLengthDivisions = 10;
     shape.absarc(0, 0, outerRadius, 0, Math.PI * 2, false); // Outer circle
     shape.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);  // Inner circle (hole)
     
     // Define extrusion settings for wheel and axis
     const extrudeSettings = {
-        steps : 30,
+        steps : 2,
         depth: wheelThickness,
         bevelEnabled: true,
         bevelSize: 0.05,
     };
     const extrudeSettingsAxis = {
-        steps : 20,
+        steps : 2,
         depth: axisThickness,
         bevelEnabled: true,
         bevelSize: 0.05,
@@ -128,7 +128,7 @@ function createBladeGeometry() {
     }
     // Sample points along the curves to create the shape
     const shapePoints = [];
-    const numPoints = 50; // Number of samples per curve
+    const numPoints = 10; // Number of samples per curve
 
     curves.forEach(curve => {
         for (let j = 0; j <= numPoints; j++) {
@@ -186,7 +186,7 @@ export function createBody() {
 
     // Extrude settings
     const extrudeSettings = {
-        steps: 100,
+        steps: 2,
         bevelEnabled: false,
         depth:bodyDepth,  
     };
@@ -205,7 +205,7 @@ export function createBody() {
     windshieldFrontShape.lineTo( 0 ,bodyHeight/2,0);
     windshieldFrontShape.closePath();
     const extrudeSettingsWindshield = {
-        steps: 100,
+        steps: 2,
         bevelEnabled: false,
         depth:bodyDepth/2,  
         

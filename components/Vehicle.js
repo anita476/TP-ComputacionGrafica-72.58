@@ -37,10 +37,10 @@ class Vehicle extends THREE.Group{
         this.turbines.children.forEach(child => { child.turnBladesHorizontal()});
     }
     animationHorizontal(rotationSpeed){
-        this.turbines.children.forEach(child => { child.animationHorizontal()});
+        this.turbines.children.forEach(child => { child.animationHorizontal(rotationSpeed)});
     }
     animationVertical(rotationSpeed){
-        this.turbines.children.forEach(child => { child.animationVertical()});
+        this.turbines.children.forEach(child => { child.animationVertical(rotationSpeed)});
     }
 }
 export {Vehicle};
