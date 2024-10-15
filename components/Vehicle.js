@@ -25,7 +25,7 @@ class Vehicle extends THREE.Group{
 
         this.doors = new Door();
         this.add(this.doors);
-        // add opening doors -> method door open, door close animation 
+
         // add stairs -> method display stairs, hide stairs..
 
     }
@@ -49,21 +49,15 @@ class Door extends THREE.Group{
     
     constructor(){
         super();
-        const opened = false;
         this.inside = createInside();
         this.add(this.inside);
+        
 
         this.door1 = createLeftDoor(); 
         this.add(this.door1);
+
         this.door2 = createRightDoor();
         this.add(this.door2);
-    }
-    openDoors(){
-        opened = true;
-        return null;
-    }
-    closeDoors(){
-        opened = false;
-        return null;
+
     }
 }

@@ -481,15 +481,41 @@ export function BRLeg(){
 
 export function createLeftDoor(){
     const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
-    door1.position.x += (totalBodyLength/2 - totalBodyLength/8);
+    door1.position.x += (totalBodyLength/2 - totalBodyLength/8) ;
+    const frame = totalBodyLength/(4*5);
+    //define door opening animation
+    const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; // Animation times in seconds
+    const values = [
+    door1.position.x, door1.position.y, door1.position.z, 
+    door1.position.x - frame, door1.position.y, door1.position.z,
+    door1.position.x - frame*2, door1.position.y, door1.position.z,
+    door1.position.x - frame * 3, door1.position.y, door1.position.z, 
+    door1.position.x - frame * 4, door1.position.y, door1.position.z,
+    door1.position.x - frame* 5, door1.position.y, door1.position.z 
+    ];
+    const positionTrack = new THREE.VectorKeyframeTrack('.position', times, values);
+    door1.animations.push(new THREE.AnimationClip( 'openLeft', 1.25, [positionTrack] ));
+
+    //define door closing animation
+    const valuesClose = [
+        door1.position.x  - frame* 5, door1.position.y, door1.position.z, 
+        door1.position.x - frame * 4 ,door1.position.y, door1.position.z,
+        door1.position.x - frame * 3, door1.position.y, door1.position.z,
+        door1.position.x - frame*2, door1.position.y, door1.position.z, 
+        door1.position.x - frame, door1.position.y, door1.position.z,
+        door1.position.x, door1.position.y, door1.position.z 
+        ];
+    const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
+    door1.animations.push(new THREE.AnimationClip( 'closeLeft',1.25, [positionTrack2] ));
+    console.log(door1.animations);
     return door1;
 }
 export function createRightDoor(){
     const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
     const frame = totalBodyLength/(4*5);
-    door2.position.x += (totalBodyLength/2 + totalBodyLength/8);
+    door2.position.x += (totalBodyLength/2 + totalBodyLength/8) ;
     //define door opening animation
-/*     const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; // Animation times in seconds
+    const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; // Animation times in seconds
     const values = [
     door2.position.x, door2.position.y, door2.position.z, 
     door2.position.x + frame, door2.position.y, door2.position.z,
@@ -499,8 +525,21 @@ export function createRightDoor(){
     door2.position.x + frame* 5, door2.position.y, door2.position.z 
     ];
     const positionTrack = new THREE.VectorKeyframeTrack('.position', times, values);
-    door2.animations.push(new THREE.AnimationClip( 'open', positionTrack ));
- */
+    door2.animations.push(new THREE.AnimationClip( 'openRight',1.25, [positionTrack] ));
+
+    //define door closing animation
+    const valuesClose = [
+    door2.position.x  + frame* 5, door2.position.y, door2.position.z, 
+    door2.position.x + frame * 4 ,door2.position.y, door2.position.z,
+    door2.position.x + frame * 3, door2.position.y, door2.position.z,
+    door2.position.x + frame*2, door2.position.y, door2.position.z, 
+    door2.position.x + frame, door2.position.y, door2.position.z,
+    door2.position.x, door2.position.y, door2.position.z 
+    ];
+    const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
+    console.log(positionTrack2);
+    door2.animations.push(new THREE.AnimationClip( 'closeRight',1.25, [positionTrack2] ));
+    console.log(door2.animations);
     return door2;
 }
 
