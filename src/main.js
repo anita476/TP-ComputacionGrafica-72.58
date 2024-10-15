@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { Turbine } from "/components/Turbine.js";
-import { createBody, createBodyRings, createPlanetScene}    from "/components/vehicleUtils.js";
+import { Turbine } from "./components/Turbine.js";
+import { createBody, createBodyRings, createPlanetScene}    from "./components/vehicleUtils.js";
 
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
