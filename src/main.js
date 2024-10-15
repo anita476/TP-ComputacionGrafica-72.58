@@ -6,6 +6,9 @@ import { createBody, createBodyRings, createPlanetScene}    from "./components/v
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
 import { Vehicle } from './components/Vehicle';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { backgroundBlurriness } from 'three/webgpu';
+
 
 let click = 0;
 
@@ -63,37 +66,28 @@ renderer.setAnimationLoop(animate); //animation loop
 
 window.addEventListener('click',onClick,false);
 
-// Function to handle the key press
 function onKeyDown(event) {
-    // Check if the pressed key is "H" (key code for "H" is 72)
     if (event.key === 'h' || event.key === 'H') {
         if (click === 0) {
             closeDoorsAc1.stop();
             closeDoorsAc2.stop();
-    
-            // Prepare the open door animations
             openDoorsAc1.clampWhenFinished = true; 
             openDoorsAc1.setLoop(THREE.LoopOnce); 
             openDoorsAc2.clampWhenFinished = true; 
             openDoorsAc2.setLoop(THREE.LoopOnce);
-            
-            // Play the open door animations
             openDoorsAc1.play();
             openDoorsAc2.play();
     
             click = 1;
         } else if (click === 1) {
-            // Stop open door animations and don't reset their positions
             openDoorsAc1.stop();
             openDoorsAc2.stop();
     
-            // Prepare the close door animations
             closeDoorsAc1.clampWhenFinished = true; 
             closeDoorsAc1.setLoop(THREE.LoopOnce); 
             closeDoorsAc2.clampWhenFinished = true; 
             closeDoorsAc2.setLoop(THREE.LoopOnce);
     
-            // Play the close door animations
             closeDoorsAc1.play();
             closeDoorsAc2.play();
     
@@ -106,7 +100,8 @@ function onKeyDown(event) {
 window.addEventListener('keydown', onKeyDown);
 
 
-const body = new Vehicle();
+
+const body = new Vehicle(scene);
 body.scale.set(2,2,2);
 body.rotateY(Math.PI);
 
@@ -122,38 +117,6 @@ const openDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[0]);
 const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
 function onClick() {
-    if (click === 0) {
-        closeDoorsAc1.stop();
-        closeDoorsAc2.stop();
-
-        // Prepare the open door animations
-        openDoorsAc1.clampWhenFinished = true; 
-        openDoorsAc1.setLoop(THREE.LoopOnce); 
-        openDoorsAc2.clampWhenFinished = true; 
-        openDoorsAc2.setLoop(THREE.LoopOnce);
-        
-        // Play the open door animations
-        openDoorsAc1.play();
-        openDoorsAc2.play();
-
-        click = 1;
-    } else if (click === 1) {
-        // Stop open door animations and don't reset their positions
-        openDoorsAc1.stop();
-        openDoorsAc2.stop();
-
-        // Prepare the close door animations
-        closeDoorsAc1.clampWhenFinished = true; 
-        closeDoorsAc1.setLoop(THREE.LoopOnce); 
-        closeDoorsAc2.clampWhenFinished = true; 
-        closeDoorsAc2.setLoop(THREE.LoopOnce);
-
-        // Play the close door animations
-        closeDoorsAc1.play();
-        closeDoorsAc2.play();
-
-        click = 0;
-    }
 }
 const clock = new THREE.Clock();
 

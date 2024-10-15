@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { Turbine } from './Turbine';
 import { Mesh } from 'three/webgpu';
 
+const textureLoader = new THREE.TextureLoader();
+    const textureMetal = textureLoader.load('/metal.jpg');
+
 /* provisional settings only! */
 const phongSettings = {
         color : 0x696c77,
@@ -9,7 +12,8 @@ const phongSettings = {
         specular: 0xf4f0f0,
         shininess : 28.5,
         side: THREE.DoubleSide,
-        opacity  : 0.88
+        opacity  : 0.88,
+        map: textureMetal
 }
 //constants for vehicle
 const outerRadius = 1.1;
@@ -507,7 +511,6 @@ export function createLeftDoor(){
         ];
     const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
     door1.animations.push(new THREE.AnimationClip( 'closeLeft',1.25, [positionTrack2] ));
-    console.log(door1.animations);
     return door1;
 }
 export function createRightDoor(){
@@ -537,14 +540,36 @@ export function createRightDoor(){
     door2.position.x, door2.position.y, door2.position.z 
     ];
     const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
-    console.log(positionTrack2);
     door2.animations.push(new THREE.AnimationClip( 'closeRight',1.25, [positionTrack2] ));
-    console.log(door2.animations);
     return door2;
 }
 
 export function createInside(){ // maybe a picture afterwards ? 
     const inside = new Mesh(new THREE.PlaneGeometry(totalBodyLength/2 , bodyHeight * (2/3)) , new THREE.MeshStandardMaterial({color: 0x000000 , side:THREE.DoubleSide}));
     inside.position.x += totalBodyLength/2;
+    inside.position.z -= 0.001;
     return inside;
+}
+
+export function createStairs(scene){
+    const loader = new GLTFLoader();
+    
+    
+    loader.load('/metal_ladder/scene.gltf', (gltf) => {
+        const model = gltf.scene
+        scene.add(model);
+        model.scale.set(0.02,0.02,0.02);
+        model.rotateY(Math.PI/2);
+        //model.position.copy( body.doors.inside.position);
+        //model.position.y -= 1.3;
+        model.position.x =  -1*body.scale.x;
+        model.position.z =  1.9;
+        // Optionally, adjust the position of the model
+        //model.rotateX(Math.PI);
+        model.position.y -= 2.7;
+    
+    }, undefined, (error) => {
+        console.error(error);
+    });
+    return model;
 }
