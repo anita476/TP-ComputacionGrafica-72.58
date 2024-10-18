@@ -6,7 +6,7 @@ import { exp } from 'three/webgpu';
 
 
 class Vehicle extends THREE.Group{
-    constructor(){
+    constructor(scene){
         super();
         this.rings = createBodyRings();
         this.add(this.rings);
@@ -25,6 +25,7 @@ class Vehicle extends THREE.Group{
 
         this.doors = new Door();
         this.add(this.doors);
+        
 
         // add stairs -> method display stairs, hide stairs..
 

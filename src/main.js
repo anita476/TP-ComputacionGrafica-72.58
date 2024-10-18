@@ -6,9 +6,12 @@ import { createBody, createBodyRings, createPlanetScene}    from "./components/v
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
 import { Vehicle } from './components/Vehicle';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { backgroundBlurriness } from 'three/webgpu';
 
+let bladesHorizontal = true;
 let click = 0;
-
+let model;
 //const scene = new THREE.Scene();
 const { scene, cameraGroup, updatePosition } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -28,7 +31,6 @@ renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of devi
 const helper = new THREE.AxesHelper(10); // add helpers
 scene.add(helper)
 
-// add music  -> commented for later
 
 
 const listener = new THREE.AudioListener();
@@ -59,58 +61,108 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-renderer.setAnimationLoop(animate); //animation loop
 
-window.addEventListener('click',onClick,false);
+function waitForAnimation(action) {
+    return new Promise((resolve) => {
+        const checkAnimation = () => {
+            if (action.isRunning()) {
+                requestAnimationFrame(checkAnimation);
+            } else {
+                resolve();
+            }
+        };
 
-// Function to handle the key press
+        checkAnimation(); // Start checking
+    });
+}
+
 function onKeyDown(event) {
-    // Check if the pressed key is "H" (key code for "H" is 72)
     if (event.key === 'h' || event.key === 'H') {
         if (click === 0) {
             closeDoorsAc1.stop();
             closeDoorsAc2.stop();
-    
-            // Prepare the open door animations
             openDoorsAc1.clampWhenFinished = true; 
             openDoorsAc1.setLoop(THREE.LoopOnce); 
             openDoorsAc2.clampWhenFinished = true; 
             openDoorsAc2.setLoop(THREE.LoopOnce);
-            
-            // Play the open door animations
             openDoorsAc1.play();
             openDoorsAc2.play();
     
             click = 1;
+                        Promise.all([
+                            waitForAnimation(openDoorsAc1),
+                            waitForAnimation(openDoorsAc2)
+                        ]).then(() => {
+                            model.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.material.transparent = false;
+                                    child.material.opacity = 1; // Set opacity to fully visible
+                                }
+                            });
+                        });
+            
         } else if (click === 1) {
-            // Stop open door animations and don't reset their positions
             openDoorsAc1.stop();
             openDoorsAc2.stop();
     
-            // Prepare the close door animations
             closeDoorsAc1.clampWhenFinished = true; 
             closeDoorsAc1.setLoop(THREE.LoopOnce); 
             closeDoorsAc2.clampWhenFinished = true; 
             closeDoorsAc2.setLoop(THREE.LoopOnce);
     
-            // Play the close door animations
             closeDoorsAc1.play();
             closeDoorsAc2.play();
     
             click = 0;
+            if (model) {
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.transparent = true;
+                        child.material.opacity = 0; // Fully transparent
+                    }
+                });
+            }
         }
     }
 }
-
-// Add event listener for keydown
 window.addEventListener('keydown', onKeyDown);
 
+function onClick(){
+    bladesHorizontal = !bladesHorizontal;
+    if(bladesHorizontal){
+        body.turnBladesHorizontal();
+    }
+    else{
+        body.turnBladesVertical();
+    }
+}
+window.addEventListener('click',onClick,false);
 
-const body = new Vehicle();
+
+const body = new Vehicle(scene);
 body.scale.set(2,2,2);
 body.rotateY(Math.PI);
-
 scene.add(body);
+
+//add stairs
+const loader = new GLTFLoader();
+loader.load('/metal_ladder/scene.gltf', (gltf) => {
+    model = gltf.scene;
+    model.scale.set(0.01, 0.01, 0.01);
+    model.rotateY(-Math.PI/2);
+    model.position.set(+1, -1.3,  -0.9);
+    const times = [0, 1]; // Time in seconds
+    const valuesOpacity = [0, 1]; // Opacity values
+
+    model.traverse((child) => {
+        if (child.isMesh) {
+            child.material.transparent = true;
+            child.material.opacity = 0; // Start fully transparent
+        }
+    });
+    scene.add(model);
+    body.add(model);
+});
 
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
@@ -121,45 +173,17 @@ const mixer2 = new THREE.AnimationMixer(body.doors.door2);
 const openDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[0]);
 const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
-function onClick() {
-    if (click === 0) {
-        closeDoorsAc1.stop();
-        closeDoorsAc2.stop();
-
-        // Prepare the open door animations
-        openDoorsAc1.clampWhenFinished = true; 
-        openDoorsAc1.setLoop(THREE.LoopOnce); 
-        openDoorsAc2.clampWhenFinished = true; 
-        openDoorsAc2.setLoop(THREE.LoopOnce);
-        
-        // Play the open door animations
-        openDoorsAc1.play();
-        openDoorsAc2.play();
-
-        click = 1;
-    } else if (click === 1) {
-        // Stop open door animations and don't reset their positions
-        openDoorsAc1.stop();
-        openDoorsAc2.stop();
-
-        // Prepare the close door animations
-        closeDoorsAc1.clampWhenFinished = true; 
-        closeDoorsAc1.setLoop(THREE.LoopOnce); 
-        closeDoorsAc2.clampWhenFinished = true; 
-        closeDoorsAc2.setLoop(THREE.LoopOnce);
-
-        // Play the close door animations
-        closeDoorsAc1.play();
-        closeDoorsAc2.play();
-
-        click = 0;
-    }
-}
 const clock = new THREE.Clock();
 
+renderer.setAnimationLoop(animate); //animation loop
 function animate(){
 	orbitcontrols.update();
-    body.animationHorizontal(0.35);
+    if(bladesHorizontal){
+        body.animationHorizontal(0.2);
+    }
+    else{
+        body.animationVertical(0.3);
+    }
 
     const delta = clock.getDelta();
     mixer1.update(delta);

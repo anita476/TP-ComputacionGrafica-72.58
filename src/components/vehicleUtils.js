@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { Turbine } from './Turbine';
 import { Mesh } from 'three/webgpu';
 
+const textureLoader = new THREE.TextureLoader();
+    const textureMetal = textureLoader.load('/metal.jpg');
+
+
 /* provisional settings only! */
 const phongSettings = {
         color : 0x696c77,
@@ -9,7 +13,8 @@ const phongSettings = {
         specular: 0xf4f0f0,
         shininess : 28.5,
         side: THREE.DoubleSide,
-        opacity  : 0.88
+        opacity  : 0.88,
+        map: textureMetal
 }
 //constants for vehicle
 const outerRadius = 1.1;
@@ -25,15 +30,7 @@ const ring2Depth = 0.3;
 const girth = 0.10;
 
 
-const doorMaterial = new THREE.MeshPhongMaterial({
-    color: 0xcccccc,
-    emissive: 0x000000,
-    specular: 0xfdc4c4,
-    shininess : 100,
-    opacity : 0.75,
-    side:THREE.DoubleSide
 
-})
 
 //Turbine container creation
 export function createTurbine(){
@@ -480,7 +477,7 @@ export function BRLeg(){
 }
 
 export function createLeftDoor(){
-    const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
     door1.position.x += (totalBodyLength/2 - totalBodyLength/8) ;
     const frame = totalBodyLength/(4*5);
     //define door opening animation
@@ -507,11 +504,10 @@ export function createLeftDoor(){
         ];
     const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
     door1.animations.push(new THREE.AnimationClip( 'closeLeft',1.25, [positionTrack2] ));
-    console.log(door1.animations);
     return door1;
 }
 export function createRightDoor(){
-    const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
     const frame = totalBodyLength/(4*5);
     door2.position.x += (totalBodyLength/2 + totalBodyLength/8) ;
     //define door opening animation
@@ -537,14 +533,13 @@ export function createRightDoor(){
     door2.position.x, door2.position.y, door2.position.z 
     ];
     const positionTrack2 = new THREE.VectorKeyframeTrack('.position', times, valuesClose);
-    console.log(positionTrack2);
     door2.animations.push(new THREE.AnimationClip( 'closeRight',1.25, [positionTrack2] ));
-    console.log(door2.animations);
     return door2;
 }
 
 export function createInside(){ // maybe a picture afterwards ? 
     const inside = new Mesh(new THREE.PlaneGeometry(totalBodyLength/2 , bodyHeight * (2/3)) , new THREE.MeshStandardMaterial({color: 0x000000 , side:THREE.DoubleSide}));
     inside.position.x += totalBodyLength/2;
+    inside.position.z -= 0.001;
     return inside;
 }
