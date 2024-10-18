@@ -323,38 +323,14 @@ export function createBodyRings(){
 export function createPlanetScene(radius = 100) {
     const scene = new THREE.Scene();
     
-    // Create a sphere geometry for the planet
-    const planetGeometry = new THREE.SphereGeometry(radius, 64, 64);
-    const planetMaterial = new THREE.MeshPhongMaterial({
-        color: 0x999999,
-        side: THREE.DoubleSide,
-    });
-    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
-    scene.add(planet);
 
     // Create a group to hold the camera and any objects that should move with it
     const cameraGroup = new THREE.Group();
     scene.add(cameraGroup);
-
+    
     // Function to update position on the planet
-    function updatePosition(x, y, z) {
-        // Convert the position to spherical coordinates
-        const spherical = new THREE.Spherical().setFromVector3(new THREE.Vector3(x, y, z));
-        
-        // Set the radius to be slightly above the planet's surface
-        spherical.radius = radius + 2; // 2 units above the surface
-        
-        // Convert back to Cartesian coordinates
-        const newPosition = new THREE.Vector3().setFromSpherical(spherical);
-        
-        // Update the camera group position
-        cameraGroup.position.copy(newPosition);
-        
-        // Make the camera group look at the center of the planet
-        cameraGroup.lookAt(0, 0, 0);
-    }
 
-    return { scene, cameraGroup, updatePosition };
+    return { scene, cameraGroup };
 }
 
 export function createFrontLeft(){

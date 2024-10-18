@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import SimplexNoise from 'simplex-noise';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { Turbine } from "./components/Turbine.js";
-import { createBody, createBodyRings, createPlanetScene}    from "./components/vehicleUtils.js";
+import { createPlanetScene}    from "./components/vehicleUtils.js";
 
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
@@ -15,8 +15,10 @@ let model;
 //const scene = new THREE.Scene();
 const { scene, cameraGroup, updatePosition } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z += 10; //starting pos for camera
-camera.position.y += 5;
+camera.position.z += 140; //starting pos for camera
+camera.position.y += 10;
+camera.lookAt(0,0,0);
+
 cameraGroup.add(camera);
 
 const renderer = new THREE.WebGLRenderer();
@@ -49,7 +51,7 @@ audioLoader.load('/OuterWilds.mp3', (buffer) => {
 const ambientLight = new THREE.AmbientLight(0x000000); // Soft white light
 const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 3); // Bright white light
 
-directionalLight.position.set(5, 5, 5); // Position of the direc. light
+directionalLight.position.set(50, 100, 30); // Position of the direc. light
 scene.add(ambientLight);
 scene.add(directionalLight);
 
@@ -138,11 +140,40 @@ function onClick(){
 }
 window.addEventListener('click',onClick,false);
 
-
+/* Create planet */
 const body = new Vehicle(scene);
 body.scale.set(2,2,2);
 body.rotateY(Math.PI);
 scene.add(body);
+document.body.appendChild(renderer.domElement);
+
+const radius = 100; 
+const widthSegments = 32;
+const heightSegments = 32;
+const sphereGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+
+const simplex = new SimplexNoise();
+const positions = sphereGeometry.attributes.position.array;
+
+for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i];
+    const y = positions[i + 1];
+    const z = positions[i + 2];
+
+    const noise = simplex.noise3D(x / 50, y / 50, z / 50); //distance between which to apply
+    
+    positions[i] *= (1 + noise * 0.2);     // x
+    positions[i + 1] *= (1 + noise * 0.1); // y
+    positions[i + 2] *= (1 + noise * 0.19); // z
+}
+
+sphereGeometry.attributes.position.needsUpdate = true;
+
+const textureLoader = new THREE.TextureLoader();
+const planetTexture = textureLoader.load('mars_texture.jpg'); 
+const planetMaterial = new THREE.MeshPhongMaterial({ map: planetTexture });
+const planetMesh = new THREE.Mesh(sphereGeometry, planetMaterial);
+scene.add(planetMesh);
 
 //add stairs
 const loader = new GLTFLoader();
@@ -151,8 +182,8 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     model.scale.set(0.01, 0.01, 0.01);
     model.rotateY(-Math.PI/2);
     model.position.set(+1, -1.3,  -0.9);
-    const times = [0, 1]; // Time in seconds
-    const valuesOpacity = [0, 1]; // Opacity values
+    const times = [0, 1]; 
+    const valuesOpacity = [0, 1]; 
 
     model.traverse((child) => {
         if (child.isMesh) {
@@ -163,7 +194,7 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     scene.add(model);
     body.add(model);
 });
-
+body.position.z = 120;
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
@@ -188,7 +219,6 @@ function animate(){
     const delta = clock.getDelta();
     mixer1.update(delta);
     mixer2.update(delta);
-    // Update position based on user input or other logic
 
 
 
