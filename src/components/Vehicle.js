@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import {BLLeg, BRLeg, createBackLeft, createBackRight, createBody , createBodyRings, createFrontLeft, createFrontRight, createInside, createLeftDoor, createRightDoor, createStairs, FLLeg, FRLeg} from './vehicleUtils.js';
+import {BLLeg, BRLeg, createBackLeft, createBackRight, createBody , createBodyRings, createFrontLeft, createFrontRight, createInside, createLeftDoor, createRightDoor, FLLeg, FRLeg} from './vehicleUtils.js';
 import { exp } from 'three/webgpu';
 
 
@@ -26,8 +26,7 @@ class Vehicle extends THREE.Group{
         this.doors = new Door();
         this.add(this.doors);
         
-        this.model = createStairs(scene);
-        this.add(this.model);
+
         // add stairs -> method display stairs, hide stairs..
 
     }

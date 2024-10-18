@@ -5,6 +5,7 @@ import { Mesh } from 'three/webgpu';
 const textureLoader = new THREE.TextureLoader();
     const textureMetal = textureLoader.load('/metal.jpg');
 
+
 /* provisional settings only! */
 const phongSettings = {
         color : 0x696c77,
@@ -29,15 +30,7 @@ const ring2Depth = 0.3;
 const girth = 0.10;
 
 
-const doorMaterial = new THREE.MeshPhongMaterial({
-    color: 0xcccccc,
-    emissive: 0x000000,
-    specular: 0xfdc4c4,
-    shininess : 100,
-    opacity : 0.75,
-    side:THREE.DoubleSide
 
-})
 
 //Turbine container creation
 export function createTurbine(){
@@ -484,7 +477,7 @@ export function BRLeg(){
 }
 
 export function createLeftDoor(){
-    const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
     door1.position.x += (totalBodyLength/2 - totalBodyLength/8) ;
     const frame = totalBodyLength/(4*5);
     //define door opening animation
@@ -514,7 +507,7 @@ export function createLeftDoor(){
     return door1;
 }
 export function createRightDoor(){
-    const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(doorMaterial));
+    const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
     const frame = totalBodyLength/(4*5);
     door2.position.x += (totalBodyLength/2 + totalBodyLength/8) ;
     //define door opening animation
@@ -549,27 +542,4 @@ export function createInside(){ // maybe a picture afterwards ?
     inside.position.x += totalBodyLength/2;
     inside.position.z -= 0.001;
     return inside;
-}
-
-export function createStairs(scene){
-    const loader = new GLTFLoader();
-    
-    
-    loader.load('/metal_ladder/scene.gltf', (gltf) => {
-        const model = gltf.scene
-        scene.add(model);
-        model.scale.set(0.02,0.02,0.02);
-        model.rotateY(Math.PI/2);
-        //model.position.copy( body.doors.inside.position);
-        //model.position.y -= 1.3;
-        model.position.x =  -1*body.scale.x;
-        model.position.z =  1.9;
-        // Optionally, adjust the position of the model
-        //model.rotateX(Math.PI);
-        model.position.y -= 2.7;
-    
-    }, undefined, (error) => {
-        console.error(error);
-    });
-    return model;
 }
