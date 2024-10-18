@@ -179,7 +179,7 @@ renderer.setAnimationLoop(animate); //animation loop
 function animate(){
 	orbitcontrols.update();
     if(bladesHorizontal){
-        body.animationHorizontal(0.3);
+        body.animationHorizontal(0.2);
     }
     else{
         body.animationVertical(0.3);
