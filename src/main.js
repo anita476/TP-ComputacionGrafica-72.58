@@ -15,8 +15,12 @@ let click = 0;
 let model;
 const { scene, cameraGroup } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+console.log(camera.position)
 camera.position.y += 817;
+camera.position.x = 0;
+camera.position.z = 0;
 camera.lookAt(0,0,0);
+
 
 
 cameraGroup.add(camera);
@@ -34,7 +38,7 @@ const helper = new THREE.AxesHelper(1000); // add helpers
 scene.add(helper)
 
 const world = new CANNON.World();
-world.gravity.set(0, -9.8, 0);
+world.gravity.set(0, -12, 0);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -170,7 +174,7 @@ box.getCenter(center); // Get the center of the bounding box
 
 // Create a Cannon.js body
 const bodyPhisical = new CANNON.Body({
-    mass: 500, // Adjust mass as needed
+    mass: 5, // Adjust mass as needed
     position: new CANNON.Vec3(center.x, center.y, center.z), // Set the position to the center of the bounding box
 });
 
@@ -229,27 +233,6 @@ const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
 const clock = new THREE.Clock();
 
- /* apply gravity */
-function applyGravitationalForce() {
-    // Get the position of the planet's mesh
-    const planetPosition = new CANNON.Vec3(
-        planet.position.x,
-        planet.position.y,
-        planet.position.z
-    );
-
-    // Iterate through all bodies in the world
-    world.bodies.forEach((body) => {
-        // Check if the body is not part of the planet (or any other condition you need)
-        if (!(body.id === getPlanetId())) { // Add any condition to identify the planet's body if needed
-            // Calculate the force direction towards the planet
-            const force = planetPosition.vsub(body.position).scale(1); // Direction towards the planet
-            body.applyForce(force.scale(5)); // Scale for attraction strength
-        }
-    });
-
-} 
-
 // Create a contact material
 const planetMaterial = new CANNON.Material('planetMaterial');
 const bodyMaterial = new CANNON.Material('bodyMaterial');
@@ -262,11 +245,24 @@ const bodyMaterial = new CANNON.Material('bodyMaterial');
 world.addContactMaterial(contactMaterial);
 bodyPhisical.material = bodyMaterial;
 
-console.log(bodyPhisical);
-console.log(planetPhisical);
 
 
 
+ const textureLoader = new THREE.TextureLoader();
+const planetTexture = textureLoader.load('cliff.jpg');
+const coneMountain = new THREE.Mesh(new THREE.ConeGeometry(50,100),new THREE.MeshBasicMaterial({ map:planetTexture}));
+coneMountain.position.set(0,50,0);
+scene.add(coneMountain);
+
+const coneBody = new CANNON.Body({
+    mass: 0,
+    position: new CANNON.Vec3(0, 50, 0) // Position it so that the base is at y = 0
+});
+
+// Create a cylinder shape for the cone
+const coneShape = new CANNON.Cylinder(0,50,100,200);
+coneBody.addShape(coneShape);
+world.addBody(coneBody); 
 
 
 
@@ -287,17 +283,17 @@ function animate(){
     if (bodyPhisical.angle > 0.1) {
         bodyPhisical.angle = 0; // Simple stabilization
     }
-    //camera.lookAt(bodyPhisical.position.x -2, bodyPhisical.position.y, bodyPhisical.position.z);
-    //applyGravitationalForce();
-
+    camera.lookAt(bodyPhisical.position.x +2, bodyPhisical.position.y, bodyPhisical.position.z);
+    //camera.position.set (bodyPhisical.position.x +2, bodyPhisical.position.y + 10, bodyPhisical.position.z);
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
+
     planet.position.copy(planetPhisical.position);
     planet.quaternion.copy(planetPhisical.quaternion);
-    console.log(bodyPhisical);
-    console.log(planetPhisical);
 
-    
+     coneMountain.position.copy(coneBody.position);
+    coneMountain.quaternion.copy(coneBody.quaternion); 
+
 	orbitcontrols.update();
 
 	renderer.render( scene, camera );

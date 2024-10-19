@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import SimplexNoise from 'simplex-noise';
 
-const radius = 1000; 
+const radius = 700; 
 const widthSegments = 64;
 const heightSegments = 64;
 const simplex = new SimplexNoise();
@@ -34,7 +34,7 @@ export function createPlanet(world) {
 
     // Create the planet mesh
     const textureLoader = new THREE.TextureLoader();
-    const planetTexture = textureLoader.load('mars_texture.jpg'); 
+    const planetTexture = textureLoader.load('cliff.jpg'); 
     const planetMaterial = new THREE.MeshBasicMaterial({ map: planetTexture });
     const planetMesh = new THREE.Mesh(sphereGeometry, planetMaterial);
     planetMesh.position.y -= radius;
