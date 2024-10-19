@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es'
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { createPlanetScene}    from "./components/vehicleUtils.js";
 
@@ -7,17 +8,16 @@ import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg,
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { backgroundBlurriness } from 'three/webgpu';
-import { createPlanet } from './components/planetUtils.js';
+import { createPlanet, getPlanetId, getPlanetPhisical } from './components/planetUtils.js';
 
 let bladesHorizontal = true;
 let click = 0;
 let model;
-//const scene = new THREE.Scene();
-const { scene, cameraGroup, updatePosition } = createPlanetScene(100);
+const { scene, cameraGroup } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z += 990; //starting pos for camera
-camera.position.y += 10;
+camera.position.y += 817;
 camera.lookAt(0,0,0);
+
 
 cameraGroup.add(camera);
 
@@ -30,10 +30,11 @@ const orbitcontrols = new OrbitControls(camera, renderer.domElement);
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
 
 
-const helper = new THREE.AxesHelper(10); // add helpers
+const helper = new THREE.AxesHelper(1000); // add helpers
 scene.add(helper)
 
-
+const world = new CANNON.World();
+world.gravity.set(0, -7, 0);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -141,14 +142,36 @@ function onClick(){
     }
 }
 window.addEventListener('click',onClick,false);
-const body = new Vehicle(scene);
+
+
+const body = new Vehicle();
 body.scale.set(2,2,2);
 body.rotateY(Math.PI);
 scene.add(body);
+
+
+// Create a Cannon.js body and assign the shape
+const bodyPhisical = new CANNON.Body({
+    mass: 50, // Adjust mass as needed
+    position: new CANNON.Vec3(body.position.x,body.position.y,body.position.z),
+    shape: new CANNON.Box(new CANNON.Vec3(10,10,10))
+});
+console.log(bodyPhisical);
+world.addBody(bodyPhisical);
+
+
+
+bodyPhisical.position.z = 0;
+bodyPhisical.position.y = 100;
+bodyPhisical.position.x += 2;
+body.position.copy(bodyPhisical.position);
+
 document.body.appendChild(renderer.domElement);
 
-const planet = createPlanet();
+const planet = createPlanet(world);
 scene.add(planet);
+const planetPhisical = getPlanetPhisical();
+console.log(planetPhisical);
 
 //add stairs
 const loader = new GLTFLoader();
@@ -169,7 +192,7 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     scene.add(model);
     body.add(model);
 });
-body.position.z = 1020;
+
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
@@ -181,9 +204,52 @@ const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
 const clock = new THREE.Clock();
 
+ /* apply gravity */
+function applyGravitationalForce() {
+    // Get the position of the planet's mesh
+    const planetPosition = new CANNON.Vec3(
+        planet.position.x,
+        planet.position.y,
+        planet.position.z
+    );
+
+    // Iterate through all bodies in the world
+    world.bodies.forEach((body) => {
+        // Check if the body is not part of the planet (or any other condition you need)
+        if (!(body.id === getPlanetId())) { // Add any condition to identify the planet's body if needed
+            // Calculate the force direction towards the planet
+            const force = planetPosition.vsub(body.position).scale(1); // Direction towards the planet
+            body.applyForce(force.scale(5)); // Scale for attraction strength
+        }
+    });
+
+} 
+
+// Create a contact material
+//const planetMaterial = new CANNON.Material('planetMaterial');
+const bodyMaterial = new CANNON.Material('bodyMaterial');
+
+// Define the contact material properties
+/* const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
+    friction: 0.5, 
+    restitution: 0.1 
+}); */
+//world.addContactMaterial(contactMaterial);
+//const planetPhisical = getPlanetPhisical();
+//planetPhisical.material = planetMaterial;
+bodyPhisical.material = bodyMaterial;
+
+console.log(bodyPhisical);
+console.log(planetPhisical);
+
+
+
+
+
+
 renderer.setAnimationLoop(animate); //animation loop
 function animate(){
-	orbitcontrols.update();
+    world.fixedStep();
     if(bladesHorizontal){
         body.animationHorizontal(0.2);
     }
@@ -194,8 +260,17 @@ function animate(){
     const delta = clock.getDelta();
     mixer1.update(delta);
     mixer2.update(delta);
+    //camera.lookAt(bodyPhisical.position.x -2, bodyPhisical.position.y, bodyPhisical.position.z);
+    //applyGravitationalForce();
+
+    body.position.copy(bodyPhisical.position);
+    body.quaternion.copy(bodyPhisical.quaternion);
+    planet.position.copy(planetPhisical.position);
+    planet.quaternion.copy(planetPhisical.quaternion);
 
 
+    
+	orbitcontrols.update();
 
 	renderer.render( scene, camera );
 }
