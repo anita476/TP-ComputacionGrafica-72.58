@@ -34,7 +34,7 @@ const helper = new THREE.AxesHelper(1000); // add helpers
 scene.add(helper)
 
 const world = new CANNON.World();
-world.gravity.set(0, -7, 0);
+world.gravity.set(0, -9.8, 0);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -150,13 +150,38 @@ body.rotateY(Math.PI);
 scene.add(body);
 
 
-// Create a Cannon.js body and assign the shape
+/* // Create a Cannon.js body and assign the shape -> boinding box is not so pretty -> TODO adjust bounding box
 const bodyPhisical = new CANNON.Body({
-    mass: 50, // Adjust mass as needed
+    mass: 500, // Adjust mass as needed
     position: new CANNON.Vec3(body.position.x,body.position.y,body.position.z),
-    shape: new CANNON.Box(new CANNON.Vec3(10,10,10))
+    shape: new CANNON.Box(new CANNON.Vec3(4,3,5))
 });
 console.log(bodyPhisical);
+bodyPhisical.fixedRotation = true; 
+bodyPhisical.linearDamping = 0.5; 
+bodyPhisical.angularDamping = 1; 
+world.addBody(bodyPhisical); */
+const box = new THREE.Box3().setFromObject(body);
+
+const size = new THREE.Vector3();
+const center = new THREE.Vector3();
+box.getSize(size); // Get the size of the bounding box
+box.getCenter(center); // Get the center of the bounding box
+
+// Create a Cannon.js body
+const bodyPhisical = new CANNON.Body({
+    mass: 500, // Adjust mass as needed
+    position: new CANNON.Vec3(center.x, center.y, center.z), // Set the position to the center of the bounding box
+});
+
+// Create a shape from the bounding box dimensions
+const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2 + 0.5, size.z / 2));
+bodyPhisical.addShape(shape);
+bodyPhisical.fixedRotation = true; 
+bodyPhisical.linearDamping = 0.5; 
+bodyPhisical.angularDamping = 1; 
+
+// Now add the body to your Cannon.js world
 world.addBody(bodyPhisical);
 
 
@@ -226,17 +251,15 @@ function applyGravitationalForce() {
 } 
 
 // Create a contact material
-//const planetMaterial = new CANNON.Material('planetMaterial');
+const planetMaterial = new CANNON.Material('planetMaterial');
 const bodyMaterial = new CANNON.Material('bodyMaterial');
 
 // Define the contact material properties
-/* const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
-    friction: 0.5, 
-    restitution: 0.1 
-}); */
-//world.addContactMaterial(contactMaterial);
-//const planetPhisical = getPlanetPhisical();
-//planetPhisical.material = planetMaterial;
+ const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
+    friction: 0.9, 
+    restitution: 0.001
+}); 
+world.addContactMaterial(contactMaterial);
 bodyPhisical.material = bodyMaterial;
 
 console.log(bodyPhisical);
@@ -260,6 +283,10 @@ function animate(){
     const delta = clock.getDelta();
     mixer1.update(delta);
     mixer2.update(delta);
+
+    if (bodyPhisical.angle > 0.1) {
+        bodyPhisical.angle = 0; // Simple stabilization
+    }
     //camera.lookAt(bodyPhisical.position.x -2, bodyPhisical.position.y, bodyPhisical.position.z);
     //applyGravitationalForce();
 
@@ -267,7 +294,8 @@ function animate(){
     body.quaternion.copy(bodyPhisical.quaternion);
     planet.position.copy(planetPhisical.position);
     planet.quaternion.copy(planetPhisical.quaternion);
-
+    console.log(bodyPhisical);
+    console.log(planetPhisical);
 
     
 	orbitcontrols.update();

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import SimplexNoise from 'simplex-noise';
 
-const radius = 800; 
+const radius = 1000; 
 const widthSegments = 64;
 const heightSegments = 64;
 const simplex = new SimplexNoise();
@@ -21,10 +21,10 @@ export function createPlanet(world) {
         const y = positions[i + 1];
         const z = positions[i + 2];
 
-        const noise = simplex.noise3D(x / 6, y / 20, z / 6);
+/*         const noise = simplex.noise3D(x / 6, y / 20, z / 6);
         positions[i] *= (1 + noise * 0.1);     // x
         positions[i + 1] *= (1 + noise * 0.08); // y
-        positions[i + 2] *= (1 + noise * 0.1); // z
+        positions[i + 2] *= (1 + noise * 0.1); // z */
 
         // Collect modified vertices
         vertices.push(positions[i], positions[i + 1], positions[i + 2]);
@@ -40,7 +40,7 @@ export function createPlanet(world) {
     planetMesh.position.y -= radius;
 
     // Create the CANNON body with ConvexPolyhedron
-    const boundingBox = new CANNON.ConvexPolyhedron(vertices);
+    const boundingBox = new CANNON.Sphere(radius);
     phisicalBody = new CANNON.Body({
         mass: 0, 
         position: new CANNON.Vec3(planetMesh.position.x, planetMesh.position.y, planetMesh.position.z),
@@ -50,7 +50,7 @@ export function createPlanet(world) {
     console.log(phisicalBody.id);
     world.addBody(phisicalBody);
 
-    planetMesh.position.copy(phisicalBody.position);
+
 
     return planetMesh;
 }
