@@ -3,19 +3,15 @@ import * as CANNON from 'cannon-es'
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { createPlanetScene}    from "./components/vehicleUtils.js";
 
-import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { backgroundBlurriness } from 'three/webgpu';
-import { createPlanet, getPlanetId, getPlanetPhisical } from './components/planetUtils.js';
+import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains} from './components/planetUtils.js';
 
 let bladesHorizontal = true;
 let click = 0;
 let model;
 const { scene, cameraGroup } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-console.log(camera.position)
 camera.position.y += 817;
 camera.position.x = 0;
 camera.position.z = 0;
@@ -188,7 +184,6 @@ document.body.appendChild(renderer.domElement);
 const planet = createPlanet(world);
 scene.add(planet);
 const planetPhisical = getPlanetPhisical();
-console.log(planetPhisical);
 
 //add stairs
 const loader = new GLTFLoader();
@@ -235,111 +230,10 @@ bodyPhisical.material = bodyMaterial;
 
 
 
-
- const textureLoader = new THREE.TextureLoader();
-const planetTexture = textureLoader.load('cliff.jpg');
-/* const coneMountain = new THREE.Mesh(new THREE.ConeGeometry(50,100),new THREE.MeshBasicMaterial({ map:planetTexture}));
-coneMountain.position.set(0,47,0);
-scene.add(coneMountain);
-
-const coneBody = new CANNON.Body({
-    mass: 0,
-    position: new CANNON.Vec3(0, 47, 0) // Position it so that the base is at y = 0
-}); */
-
-// Create a cylinder shape for the cone
-/* const coneShape = new CANNON.Cylinder(0,50,100,200);
-coneBody.addShape(coneShape);
-world.addBody(coneBody);  */
-
-function createRandomCone(minHeight, maxHeight, minRadius, maxRadius) {
-    // Generate random latitude and longitude
-
-    const height = Math.random() * (maxHeight - minHeight) + minHeight;
-    const radius = Math.random() * (maxRadius - minRadius) + minRadius;
-    const coneGeometry = new THREE.ConeGeometry(radius, height, 20);
-    const coneMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
-    const coneMesh = new THREE.Mesh(coneGeometry, coneMaterial);
-
-    return coneMesh;
-}
-const planetGroup = new THREE.Group;
-const planetPhisicalGroup = new THREE.Group;
-const radius = 700;
+createMountainMeshesAndBodies(scene, world);
+const mountains = getMountains();
 
 
-//add all mountains
-
-//first group
-const refCirc =  new THREE.EllipseCurve(0,0,radius,radius);
-for(var i = 0; i < 1 ; i+= (1/8)){
-    const position = refCirc.getPointAt(i);
-    const cone = createRandomCone(200,300,100,150);
-    cone.position.x += position.x;
-    cone.position.y += position.y;
-    cone.position.z = 0;
-    cone.rotation.z += Math.PI * i*2;
-    cone.rotation.z  -= Math.PI/2;
-    planetGroup.add(cone); //afterwards make
-
-    scene.add(cone); 
-}
-// second group 
-const refCirc2=  new THREE.EllipseCurve(0,0,radius * 7/8 , radius * 7/8);
-for(var i = 0; i < 1 ; i+= (1/8)){
-    const position = refCirc2.getPointAt(i);
-    const cone = createRandomCone(200,300,100,150);
-    cone.position.x += position.x;
-    cone.position.y += position.y;
-    cone.position.z += radius/2;
-    cone.rotation.z += Math.PI * i*2;
-    cone.rotation.z  -= Math.PI/2;
-    cone.rotateX(Math.PI/4);
-    planetGroup.add(cone); //afterwards make
-    scene.add(cone);
-}
-// third group 
-const refCirc3=  new THREE.EllipseCurve(0,0,radius * 7/8 , radius * 7/8);
-for(var i = 0; i < 1 ; i+= (1/8)){
-    const position = refCirc3.getPointAt(i);
-    const cone = createRandomCone(200,300,100,150);
-    cone.position.x += position.x;
-    cone.position.y += position.y;
-    cone.position.z -= radius/2;
-    cone.rotation.z += Math.PI * i*2;
-    cone.rotation.z  -= Math.PI/2;
-    cone.rotateX(-Math.PI/4);
-    planetGroup.add(cone); 
-    scene.add(cone);
-}
-// fourth group 
-const refCirc4=  new THREE.EllipseCurve(0,0,radius /2 , radius / 2);
-for(var i = 0; i < 1 ; i+= (1/8)){
-    const position = refCirc4.getPointAt(i);
-    const cone = createRandomCone(200,300,100,150);
-    cone.position.x += position.x;
-    cone.position.y += position.y;
-    cone.position.z += radius * 7/8;
-    cone.rotation.z += Math.PI * i*2;
-    cone.rotation.z  -= Math.PI/2;
-    cone.rotateX(Math.PI/4);
-    planetGroup.add(cone); //afterwards make
-    scene.add(cone);
-}
-// fifth group 
-const refCirc5=  new THREE.EllipseCurve(0,0,radius /2 , radius / 2);
-for(var i = 0; i < 1 ; i+= (1/8)){
-    const position = refCirc5.getPointAt(i);
-    const cone = createRandomCone(200,300,100,150);
-    cone.position.x += position.x;
-    cone.position.y += position.y;
-    cone.position.z -= radius * 7/8;
-    cone.rotation.z += Math.PI * i*2;
-    cone.rotation.z  -= Math.PI/2;
-    cone.rotateX(-Math.PI/4);
-    planetGroup.add(cone); //afterwards make
-    scene.add(cone);
-}
 renderer.setAnimationLoop(animate); //animation loop
 function animate(){
     world.fixedStep();
@@ -365,9 +259,10 @@ function animate(){
     planet.position.copy(planetPhisical.position);
     planet.quaternion.copy(planetPhisical.quaternion);
 
-    //coneMountain.position.copy(coneBody.position);
-    //coneMountain.quaternion.copy(coneBody.quaternion); 
-
+    for(var i = 0; i< mountains.length; i++){
+        mountains[i][0].position.copy(mountains[i][1].position);
+        mountains[i][0].quaternion.copy(mountains[i][1].quaternion);
+    }
 	orbitcontrols.update();
 
 	renderer.render( scene, camera );
