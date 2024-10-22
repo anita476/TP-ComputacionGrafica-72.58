@@ -1,23 +1,23 @@
 import * as THREE from 'three';
-import SimplexNoise from 'simplex-noise';
+import * as CANNON from 'cannon-es'
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { createPlanetScene}    from "./components/vehicleUtils.js";
 
-import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { BLLeg, BRLeg, createBackLeft, createBackRight, createFrontRight, FLLeg, FRLeg } from './components/vehicleUtils';
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { backgroundBlurriness } from 'three/webgpu';
+import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains} from './components/planetUtils.js';
 
 let bladesHorizontal = true;
 let click = 0;
 let model;
-//const scene = new THREE.Scene();
-const { scene, cameraGroup, updatePosition } = createPlanetScene(100);
+const { scene, cameraGroup } = createPlanetScene(100);
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z += 140; //starting pos for camera
-camera.position.y += 10;
+camera.position.y += 817;
+camera.position.x = 0;
+camera.position.z = 0;
 camera.lookAt(0,0,0);
+
+
 
 cameraGroup.add(camera);
 
@@ -30,10 +30,11 @@ const orbitcontrols = new OrbitControls(camera, renderer.domElement);
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
 
 
-const helper = new THREE.AxesHelper(10); // add helpers
+const helper = new THREE.AxesHelper(1000); // add helpers
 scene.add(helper)
 
-
+const world = new CANNON.World();
+world.gravity.set(0, -12, 0);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -50,8 +51,10 @@ audioLoader.load('/OuterWilds.mp3', (buffer) => {
 //Add some lights -> provisional  
 const ambientLight = new THREE.AmbientLight(0x000000); // Soft white light
 const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 3); // Bright white light
+const directLight2 = new THREE.DirectionalLight(0xFFFFFF, 3);
+directLight2.position.set(100,-1500,0);
 
-directionalLight.position.set(50, 100, 30); // Position of the direc. light
+directionalLight.position.set(500, 1000, 300); // Position of the direc. light
 scene.add(ambientLight);
 scene.add(directionalLight);
 
@@ -140,40 +143,47 @@ function onClick(){
 }
 window.addEventListener('click',onClick,false);
 
-/* Create planet */
-const body = new Vehicle(scene);
+
+const body = new Vehicle();
 body.scale.set(2,2,2);
 body.rotateY(Math.PI);
 scene.add(body);
+
+const box = new THREE.Box3().setFromObject(body);
+
+const size = new THREE.Vector3();
+const center = new THREE.Vector3();
+box.getSize(size); // Get the size of the bounding box
+box.getCenter(center); // Get the center of the bounding box
+
+// Create a Cannon.js body
+const bodyPhisical = new CANNON.Body({
+    mass: 5, // Adjust mass as needed
+    position: new CANNON.Vec3(center.x, center.y, center.z), // Set the position to the center of the bounding box
+});
+
+// Create a shape from the bounding box dimensions
+const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2 + 0.5, size.z / 2));
+bodyPhisical.addShape(shape);
+bodyPhisical.fixedRotation = true; 
+bodyPhisical.linearDamping = 0.5; 
+bodyPhisical.angularDamping = 1; 
+
+// Now add the body to your Cannon.js world
+world.addBody(bodyPhisical);
+
+
+
+bodyPhisical.position.z = 0;
+bodyPhisical.position.y = 1000;
+bodyPhisical.position.x += 2;
+body.position.copy(bodyPhisical.position);
+
 document.body.appendChild(renderer.domElement);
 
-const radius = 100; 
-const widthSegments = 32;
-const heightSegments = 32;
-const sphereGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-
-const simplex = new SimplexNoise();
-const positions = sphereGeometry.attributes.position.array;
-
-for (let i = 0; i < positions.length; i += 3) {
-    const x = positions[i];
-    const y = positions[i + 1];
-    const z = positions[i + 2];
-
-    const noise = simplex.noise3D(x / 50, y / 50, z / 50); //distance between which to apply
-    
-    positions[i] *= (1 + noise * 0.2);     // x
-    positions[i + 1] *= (1 + noise * 0.1); // y
-    positions[i + 2] *= (1 + noise * 0.19); // z
-}
-
-sphereGeometry.attributes.position.needsUpdate = true;
-
-const textureLoader = new THREE.TextureLoader();
-const planetTexture = textureLoader.load('mars_texture.jpg'); 
-const planetMaterial = new THREE.MeshPhongMaterial({ map: planetTexture });
-const planetMesh = new THREE.Mesh(sphereGeometry, planetMaterial);
-scene.add(planetMesh);
+const planet = createPlanet(world);
+scene.add(planet);
+const planetPhisical = getPlanetPhisical();
 
 //add stairs
 const loader = new GLTFLoader();
@@ -194,7 +204,7 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     scene.add(model);
     body.add(model);
 });
-body.position.z = 120;
+
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
@@ -206,9 +216,27 @@ const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
 const clock = new THREE.Clock();
 
+// Create a contact material
+const planetMaterial = new CANNON.Material('planetMaterial');
+const bodyMaterial = new CANNON.Material('bodyMaterial');
+
+// Define the contact material properties
+ const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
+    friction: 0.9, 
+    restitution: 0.001
+}); 
+world.addContactMaterial(contactMaterial);
+bodyPhisical.material = bodyMaterial;
+
+
+
+createMountainMeshesAndBodies(scene, world);
+const mountains = getMountains();
+
+
 renderer.setAnimationLoop(animate); //animation loop
 function animate(){
-	orbitcontrols.update();
+    world.fixedStep();
     if(bladesHorizontal){
         body.animationHorizontal(0.2);
     }
@@ -220,7 +248,22 @@ function animate(){
     mixer1.update(delta);
     mixer2.update(delta);
 
+    if (bodyPhisical.angle > 0.1) {
+        bodyPhisical.angle = 0; // Simple stabilization
+    }
+    camera.lookAt(bodyPhisical.position.x +2, bodyPhisical.position.y, bodyPhisical.position.z);
+    //camera.position.set (bodyPhisical.position.x +2, bodyPhisical.position.y + 10, bodyPhisical.position.z);
+    body.position.copy(bodyPhisical.position);
+    body.quaternion.copy(bodyPhisical.quaternion);
 
+    planet.position.copy(planetPhisical.position);
+    planet.quaternion.copy(planetPhisical.quaternion);
+
+    for(var i = 0; i< mountains.length; i++){
+        mountains[i][0].position.copy(mountains[i][1].position);
+        mountains[i][0].quaternion.copy(mountains[i][1].quaternion);
+    }
+	orbitcontrols.update();
 
 	renderer.render( scene, camera );
 }
