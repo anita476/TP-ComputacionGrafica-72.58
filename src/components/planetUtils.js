@@ -28,7 +28,7 @@ export function createPlanet(world) {
 
     const textureLoader = new THREE.TextureLoader();
     const planetTexture = textureLoader.load('cliff.jpg'); 
-    const planetMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff  });
+    const planetMaterial = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff , roughness:0, metalness:0.7 });
     const planetMesh = new THREE.Mesh(sphereGeometry, planetMaterial);
 
     const boundingBox = new CANNON.Sphere(radius);
@@ -67,8 +67,8 @@ function createRandomCone(minHeight, maxHeight, minRadius, maxRadius) {
 
     const height = Math.random() * (maxHeight - minHeight) + minHeight;
     const radius = Math.random() * (maxRadius - minRadius) + minRadius;
-    const coneGeometry = new THREE.ConeGeometry(radius, height, 20);
-    const coneMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
+    const coneGeometry = new THREE.ConeGeometry(radius, height, 200);
+    const coneMaterial = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff , roughness:0, metalness:0.7 });
     const coneMesh = new THREE.Mesh(coneGeometry, coneMaterial);
 
     const coneBody = new CANNON.Body({

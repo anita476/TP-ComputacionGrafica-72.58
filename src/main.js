@@ -6,6 +6,7 @@ import { createPlanetScene}    from "./components/vehicleUtils.js";
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains} from './components/planetUtils.js';
+import { add } from 'three/webgpu';
 
 let bladesHorizontal = true;
 let click = 0;
@@ -47,16 +48,18 @@ audioLoader.load('/OuterWilds.mp3', (buffer) => {
     sound.play(); 
 }); 
  
+const ambientLight = new THREE.AmbientLight( 0x000000 );
+scene.add( ambientLight );
 
-//Add some lights -> provisional  
-const ambientLight = new THREE.AmbientLight(0x000000); // Soft white light
-const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 3); // Bright white light
-const directLight2 = new THREE.DirectionalLight(0xFFFFFF, 3);
-directLight2.position.set(100,-1500,0);
 
-directionalLight.position.set(500, 1000, 300); // Position of the direc. light
-scene.add(ambientLight);
-scene.add(directionalLight);
+
+const light2 = new THREE.DirectionalLight( 0xffffff, 30 );
+light2.position.set( 100, 400, 100 );
+scene.add( light2 );
+
+const light3 = new THREE.DirectionalLight( 0xffffff, 3 );
+light3.position.set( - 100, - 400, - 100 );
+scene.add( light3 );
 
 
 window.addEventListener('resize', onWindowResize, false); //auto update size of window
@@ -184,6 +187,7 @@ document.body.appendChild(renderer.domElement);
 const planet = createPlanet(world);
 scene.add(planet);
 const planetPhisical = getPlanetPhisical();
+
 
 //add stairs
 const loader = new GLTFLoader();

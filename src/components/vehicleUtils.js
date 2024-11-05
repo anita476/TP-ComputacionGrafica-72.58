@@ -8,9 +8,12 @@ const textureLoader = new THREE.TextureLoader();
 
 /* provisional settings only! */
 const phongSettings = {
-        color : 0x696c77,
-        emissive : 0x191515,
+        //color : 0x696c77,
+        color: 0x242424,
+        //emissive : 0x191515,
+        emissive: 0x000000,
         specular: 0xf4f0f0,
+        //specular: 0xffffff,
         shininess : 28.5,
         side: THREE.DoubleSide,
         opacity  : 0.88,
