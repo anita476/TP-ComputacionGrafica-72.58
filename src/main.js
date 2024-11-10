@@ -4,10 +4,11 @@ import { createPlanetScene}    from "./components/vehicleUtils.js";
 
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains} from './components/planetUtils.js';
+import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains, createStars} from './components/planetUtils.js';
 
 let bladesHorizontal = true;
 let click = 0;
+let legsDown = 1;
 let model;
 const { scene, cameraGroup } = createPlanetScene(100);
 
@@ -68,8 +69,8 @@ scene.add( light3 );
 
 window.addEventListener('resize', onWindowResize, false); //auto update size of window
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    currentCamera.aspect = window.innerWidth / window.innerHeight;
+    currentCamera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
@@ -103,6 +104,24 @@ function onKeyDown(event) {
     }
     if(event.key == '4'){
         currentCamera = bottomCamera;
+    }
+    if(event.key == 'j' || event.key == 'J'){
+        if(legsDown === 1){
+            downLegs.stop();
+            upLegss.clampWhenFinished = true; 
+            upLegss.setLoop(THREE.LoopOnce);
+            upLegss.play();
+            legsDown = 0;
+        }
+        else if(legsDown === 0){
+            upLegss.stop();
+            downLegs.clampWhenFinished = true; 
+            downLegs.setLoop(THREE.LoopOnce);
+            downLegs.play();
+            legsDown = 1;
+        }
+        
+            
     }
     if(event.key === 's' || event.key === 'S'){
         const forwardImpulse = new CANNON.Vec3(0, 0, -forwardImpulseStrength);  
@@ -202,6 +221,10 @@ bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 
 scene.add(body);
 
+const stars = createStars();
+
+scene.add(stars);
+
 const box = new THREE.Box3().setFromObject(body);
 
 const size = new THREE.Vector3();
@@ -268,6 +291,13 @@ const mixer2 = new THREE.AnimationMixer(body.doors.door2);
 const openDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[0]);
 const closeDoorsAc2 = mixer2.clipAction(body.doors.door2.animations[1]);
 
+
+const mixer3 = new THREE.AnimationMixer(body.legs);
+const upLegss = mixer3.clipAction(body.legs.children[0].animations[0]);
+
+const mixer4 = new THREE.AnimationMixer(body.legs);
+const downLegs = mixer4.clipAction(body.legs.children[0].animations[1]);
+
 const clock = new THREE.Clock();
 
 // Create a contact material
@@ -277,7 +307,7 @@ const bodyMaterial = new CANNON.Material('bodyMaterial');
 // Define the contact material properties
  const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
     friction: 0.9, 
-    restitution: 0.001
+    restitution: 0
 }); 
 world.addContactMaterial(contactMaterial);
 bodyPhisical.material = bodyMaterial;
@@ -286,6 +316,10 @@ bodyPhisical.material = bodyMaterial;
 
 createMountainMeshesAndBodies(scene, world);
 const mountains = getMountains();
+for(let i = 0 ; i < mountains.length  ; i++){
+    mountains[i][1].material = planetMaterial;
+}
+planetPhisical.material = planetMaterial;
 
 
 renderer.setAnimationLoop(animate); //animation loop
@@ -301,6 +335,8 @@ function animate(){
     const delta = clock.getDelta();
     mixer1.update(delta);
     mixer2.update(delta);
+    mixer3.update(delta);
+    mixer4.update(delta);
 
     if (bodyPhisical.angle > 0.1) {
         bodyPhisical.angle = 0; // Simple stabilization
