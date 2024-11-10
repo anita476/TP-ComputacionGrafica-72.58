@@ -419,10 +419,38 @@ function createlegGroup(){
     const leg = new THREE.Mesh(legGeo,material);
     leg.position.y += (points[9].y - points[0].y);
     const legGroup = new THREE.Group();
+
     legGroup.add(foot);
     legGroup.add(leg);
     legGroup.scale.set(0.01,0.01,0.01);
     legGroup.position.y -= 2*(points[9].y - points[0].y)*legGroup.scale.x;
+
+    const keyframes = [
+        { time: 0, value: legGroup.position.y + 0.5},
+        { time: 2, value: legGroup.position.y + 1.6} 
+    ];
+
+    const positionKF = new THREE.KeyframeTrack(
+        '.position[y]', 
+        keyframes.map(kf => kf.time), 
+        keyframes.map(kf => kf.value) 
+    );
+    const keyframes2 = [
+        { time: 0, value: legGroup.position.y + 1.6},
+        { time: 2, value: legGroup.position.y + 0.5} 
+    ];
+
+    const positionKF2 = new THREE.KeyframeTrack(
+        '.position[y]', 
+        keyframes2.map(kf => kf.time), 
+        keyframes2.map(kf => kf.value) 
+    );
+    const clip = new THREE.AnimationClip('moveLegUp', -1, [positionKF]);
+    const clip2 = new THREE.AnimationClip('moveLegDown', -1, [positionKF2]);
+
+    legGroup.animations.push(clip);
+    legGroup.animations.push(clip2);
+
     return legGroup;
 }
 
