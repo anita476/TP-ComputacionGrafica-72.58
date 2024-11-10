@@ -336,7 +336,7 @@ for(let i = -15; i <= 15; i++) {
       const body = new CANNON.Body({
         mass: 0,
         position: new CANNON.Vec3(convertedPosition.x,convertedPosition.y,convertedPosition.z),
-        shape: new CANNON.Cylinder(1*hexScaleFactor, 1*hexScaleFactor, 10*hexScaleFactor, 6, 1)
+        shape: new CANNON.Cylinder(1*hexScaleFactor, 1*hexScaleFactor, 10, 6, 1)
         });
         world.addBody(body);   
     } 
