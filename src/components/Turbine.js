@@ -16,16 +16,20 @@ class Turbine extends THREE.Group{
     }
 
     turnBladesVertical(){
+        if(!this.isVertical){
         this.isVertical = true;
         this.blades.children.forEach(child => {
             child.rotateY(Math.PI /2);
         });
+        }
     }
     turnBladesHorizontal(){
+        if(this.isVertical){
         this.isVertical = false;
         this.blades.children.forEach(child => {
             child.rotateY(-Math.PI /2);
         });
+        }
     }
     animationHorizontal(rotationSpeed){
         if(!this.isVertical){

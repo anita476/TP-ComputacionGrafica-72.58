@@ -1,31 +1,35 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { createPlanetScene}    from "./components/vehicleUtils.js";
 
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains} from './components/planetUtils.js';
-import { add } from 'three/webgpu';
 
 let bladesHorizontal = true;
 let click = 0;
 let model;
 const { scene, cameraGroup } = createPlanetScene(100);
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y += 817;
-camera.position.x = 0;
-camera.position.z = 0;
-camera.lookAt(0,0,0);
 
 
 
-cameraGroup.add(camera);
+//Create cameras
+const rearCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    rearCamera.position.set(1,2,-3);
+const frontCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    frontCamera.position.set(1,2,7);
+const topCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    topCamera.position.set(1, 10,-1);
+const bottomCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    bottomCamera.position.set(1, -2, -2);
+
+
+let currentCamera = rearCamera;
+
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement )
-const orbitcontrols = new OrbitControls(camera, renderer.domElement);
 //orbitcontrols.maxDistance = 10000; // only works for perspective camera...
 
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
@@ -35,10 +39,10 @@ const helper = new THREE.AxesHelper(1000); // add helpers
 scene.add(helper)
 
 const world = new CANNON.World();
-world.gravity.set(0, -12, 0);
+world.gravity.set(0, -20, 0);
 
 const listener = new THREE.AudioListener();
-camera.add(listener);
+currentCamera.add(listener);
 const sound = new THREE.Audio(listener);
 const audioLoader = new THREE.AudioLoader();
 audioLoader.load('/OuterWilds.mp3', (buffer) => {
@@ -84,29 +88,40 @@ function waitForAnimation(action) {
     });
 }
 const speed=0.6;
-const riseImpulseStrength = 15;
-const forwardImpulseStrength = 10;
-const sideImpulseStrength = 10;
+const riseImpulseStrength = 25;
+const forwardImpulseStrength = 20;
+const sideImpulseStrength = 20;
 function onKeyDown(event) {
-    if(event.key === 'w' || event.key === 'W'){
-        
+    if(event.key == '1'){
+        currentCamera = rearCamera;
+    }
+    if(event.key == '2'){
+        currentCamera = frontCamera;
+    }
+    if(event.key == '3'){
+        currentCamera = topCamera;
+    }
+    if(event.key == '4'){
+        currentCamera = bottomCamera;
+    }
+    if(event.key === 's' || event.key === 'S'){
         const forwardImpulse = new CANNON.Vec3(0, 0, -forwardImpulseStrength);  
         bodyPhisical.applyImpulse(forwardImpulse, bodyPhisical.position);
     }
-    if(event.key == 's' || event.key === 'S'){
+    if(event.key == 'w' || event.key === 'W'){
         const backwardsImpulse = new CANNON.Vec3(0, 0, forwardImpulseStrength);  
         bodyPhisical.applyImpulse(backwardsImpulse, bodyPhisical.position);
     }
-    if(event.key == 'u' || event.key == 'U'){
+    if(event.key === ' ' || event.key === 'Spacebar'){
         const upwardImpulse = new CANNON.Vec3(0, riseImpulseStrength, 0); 
         bodyPhisical.applyImpulse(upwardImpulse, bodyPhisical.position);
         console.log('Applied upward impulse:', upwardImpulse);
     }
-    if(event.key == 'd' || event.key == 'D'){
+    if(event.key == 'a' || event.key == 'A'){
         const sideImpulse = new CANNON.Vec3(sideImpulseStrength, 0, 0); 
         bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
     }
-    if(event.key == 'a' || event.key == 'A'){
+    if(event.key == 'd' || event.key == 'D'){
         const sideImpulse = new CANNON.Vec3(-sideImpulseStrength, 0, 0); 
         bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
     }
@@ -174,7 +189,17 @@ window.addEventListener('click',onClick,false);
 
 const body = new Vehicle();
 body.scale.set(2,2,2);
-body.rotateY(Math.PI);
+/*-- Add cameras to the models so they move with it!  --*/
+body.add(frontCamera);
+body.add(rearCamera);
+body.add(topCamera);
+body.add(bottomCamera);
+frontCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
+rearCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
+topCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
+bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
+//body.rotateY(-Math.PI);
+
 scene.add(body);
 
 const box = new THREE.Box3().setFromObject(body);
@@ -193,7 +218,7 @@ const bodyPhisical = new CANNON.Body({
 // Create a shape from the bounding box dimensions
 const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2 + 0.5, size.z / 2));
 bodyPhisical.addShape(shape);
-bodyPhisical.fixedRotation = true; 
+bodyPhisical.fixedRotation = false; 
 bodyPhisical.linearDamping = 0.5; 
 bodyPhisical.angularDamping = 1; 
 
@@ -280,8 +305,8 @@ function animate(){
     if (bodyPhisical.angle > 0.1) {
         bodyPhisical.angle = 0; // Simple stabilization
     }
-    camera.lookAt(bodyPhisical.position.x +2, bodyPhisical.position.y, bodyPhisical.position.z);
-    //camera.position.set (bodyPhisical.position.x +2, bodyPhisical.position.y + 10, bodyPhisical.position.z);
+    //currentCamera.lookAt(bodyPhisical.position.x+2, bodyPhisical.position.y, bodyPhisical.position.z);
+
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
@@ -292,9 +317,8 @@ function animate(){
         mountains[i][0].position.copy(mountains[i][1].position);
         mountains[i][0].quaternion.copy(mountains[i][1].quaternion);
     }
-	orbitcontrols.update();
 
-	renderer.render( scene, camera );
+	renderer.render( scene, currentCamera );
 }
 
 
