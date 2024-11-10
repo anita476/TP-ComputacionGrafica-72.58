@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains, createStars} from './components/planetUtils.js';
+import { createStars} from './components/planetUtils.js';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
@@ -16,6 +16,7 @@ let click = 0;
 let model;
 let legsDown = 1;
 const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0xAAAAAA, 0.002);
 
 const simplex = new SimplexNoise();
 
@@ -342,7 +343,7 @@ for(let i = -15; i <= 15; i++) {
     } 
 }
 let hexagonMesh = new THREE.Mesh(
-    hexagonGeometries, new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff , roughness:0, metalness:0.99}));
+    hexagonGeometries, new THREE.MeshStandardMaterial({color: 0x110082, roughness:0, metalness:0.99}));
 scene.add(hexagonMesh);
 
 renderer.setAnimationLoop(animate); //animation loop
