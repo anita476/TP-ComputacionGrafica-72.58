@@ -14,11 +14,10 @@ let hexScaleFactor = 20;
 let bladesHorizontal = true;
 let click = 0;
 let model;
-
+let legsDown = 1;
 const scene = new THREE.Scene();
 
 const simplex = new SimplexNoise();
-
 
 
 
@@ -101,15 +100,19 @@ const sideImpulseStrength = 20;
 function onKeyDown(event) {
     if(event.key == '1'){
         currentCamera = rearCamera;
+        currentCamera.updateProjectionMatrix();
     }
     if(event.key == '2'){
         currentCamera = frontCamera;
+        currentCamera.updateProjectionMatrix();
     }
     if(event.key == '3'){
         currentCamera = topCamera;
+        currentCamera.updateProjectionMatrix();
     }
     if(event.key == '4'){
         currentCamera = bottomCamera;
+        currentCamera.updateProjectionMatrix();
     }
     if(event.key == 'j' || event.key == 'J'){
         if(legsDown === 1){
@@ -254,6 +257,8 @@ const bodyPhisical = new CANNON.Body({
     mass: 5, // Adjust mass as needed
     position: new CANNON.Vec3(center.x, center.y, center.z), // Set the position to the center of the bounding box
 });
+console.log(size);
+console.log(center);
 
 // Create a shape from the bounding box dimensions
 const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2 + 0.5, size.z / 2));
@@ -265,6 +270,7 @@ bodyPhisical.angularDamping = 1;
 // Now add the body to your Cannon.js world
 world.addBody(bodyPhisical);
 
+/* Add plane in Cannon-ES for testing */
 
 
 bodyPhisical.position.z = 0;
@@ -312,11 +318,6 @@ const downLegs = mixer4.clipAction(body.legs.children[0].animations[1]);
 
 const clock = new THREE.Clock();
 
-const floorBody = new CANNON.Body({
-    mass: 0,
-    position: new CANNON.Vec3(0,0,0)
-});
-world.addBody(floorBody);
 
 /*-- BUILDING HEX-MAP ---*/
 
@@ -341,7 +342,7 @@ for(let i = -15; i <= 15; i++) {
     } 
 }
 let hexagonMesh = new THREE.Mesh(
-    hexagonGeometries, new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff , roughness:0, metalness:0.96}));
+    hexagonGeometries, new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff , roughness:0, metalness:0.99}));
 scene.add(hexagonMesh);
 
 renderer.setAnimationLoop(animate); //animation loop
