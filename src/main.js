@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es'
-import { createPlanetScene}    from "./components/vehicleUtils.js";
-
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains, createStars} from './components/planetUtils.js';
 
+let hexScaleFactor = 10;
 let bladesHorizontal = true;
 let click = 0;
-let legsDown = 1;
 let model;
-const { scene, cameraGroup } = createPlanetScene(100);
+
+const scene = new THREE.Scene();
+
+const simplex = new SimplexNoise();
+
 
 
 
@@ -31,16 +33,15 @@ let currentCamera = rearCamera;
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement )
-//orbitcontrols.maxDistance = 10000; // only works for perspective camera...
 
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
 
 
-const helper = new THREE.AxesHelper(1000); // add helpers
+const helper = new THREE.AxesHelper(1000); 
 scene.add(helper)
 
 const world = new CANNON.World();
-world.gravity.set(0, -20, 0);
+world.gravity.set(0, -12, 0);
 
 const listener = new THREE.AudioListener();
 currentCamera.add(listener);
@@ -88,7 +89,6 @@ function waitForAnimation(action) {
         checkAnimation(); // Start checking
     });
 }
-const speed=0.6;
 const riseImpulseStrength = 25;
 const forwardImpulseStrength = 20;
 const sideImpulseStrength = 20;
@@ -218,18 +218,6 @@ function onKeyDown(event) {
 }
 window.addEventListener('keydown', onKeyDown);
 
-/* function onClick(){
-    bladesHorizontal = !bladesHorizontal;
-    if(bladesHorizontal){
-        body.turnBladesHorizontal();
-    }
-    else{
-        body.turnBladesVertical();
-    }
-}
-window.addEventListener('click',onClick,false); */
-
-
 const body = new Vehicle();
 body.scale.set(2,2,2);
 /*-- Add cameras to the models so they move with it!  --*/
@@ -241,7 +229,6 @@ frontCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 rearCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 topCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
-//body.rotateY(-Math.PI);
 
 scene.add(body);
 
@@ -275,16 +262,11 @@ world.addBody(bodyPhisical);
 
 
 bodyPhisical.position.z = 0;
-bodyPhisical.position.y = 800;
+bodyPhisical.position.y = 100;
 bodyPhisical.position.x += 2;
 body.position.copy(bodyPhisical.position);
 
 document.body.appendChild(renderer.domElement);
-
-const planet = createPlanet(world);
-scene.add(planet);
-const planetPhisical = getPlanetPhisical();
-
 
 //add stairs
 const loader = new GLTFLoader();
@@ -324,27 +306,37 @@ const downLegs = mixer4.clipAction(body.legs.children[0].animations[1]);
 
 const clock = new THREE.Clock();
 
-// Create a contact material
-const planetMaterial = new CANNON.Material('planetMaterial');
-const bodyMaterial = new CANNON.Material('bodyMaterial');
+const floorBody = new CANNON.Body({
+    mass: 0,
+    position: new CANNON.Vec3(0,0,0)
+});
+world.addBody(floorBody);
 
-// Define the contact material properties
- const contactMaterial = new CANNON.ContactMaterial(planetMaterial, bodyMaterial, {
-    friction: 0.9, 
-    restitution: 0
-}); 
-world.addContactMaterial(contactMaterial);
-bodyPhisical.material = bodyMaterial;
+/*-- BUILDING HEX-MAP ---*/
 
+for(let i = -15; i <= 15; i++) {
+    for(let j = -15; j <= 15; j++) {
+      let position = tileToPosition(i, j);
+        //if(position.length() > 50) continue;
 
+        let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
+        noise = Math.pow(noise, 1.5);
 
-createMountainMeshesAndBodies(scene, world);
-const mountains = getMountains();
-for(let i = 0 ; i < mountains.length  ; i++){
-    mountains[i][1].material = planetMaterial;
+      hex(noise * 10, position);
+
+      let convertedPosition = new CANNON.Vec3(position.x, noise *hexScaleFactor* 10, position.y);
+        
+      const body = new CANNON.Body({
+        mass: 0,
+        position: new CANNON.Vec3(convertedPosition.x,convertedPosition.y,convertedPosition.z),
+        shape: new CANNON.Cylinder(1*hexScaleFactor, 1*hexScaleFactor, 10*hexScaleFactor, 6, 1)
+        });
+        world.addBody(body);   
+    } 
 }
-planetPhisical.material = planetMaterial;
-
+let hexagonMesh = new THREE.Mesh(
+    hexagonGeometries, new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff , roughness:0, metalness:0.96}));
+scene.add(hexagonMesh);
 
 renderer.setAnimationLoop(animate); //animation loop
 function animate(){
@@ -365,23 +357,33 @@ function animate(){
     if (bodyPhisical.angle > 0.1) {
         bodyPhisical.angle = 0; // Simple stabilization
     }
-    //currentCamera.lookAt(bodyPhisical.position.x+2, bodyPhisical.position.y, bodyPhisical.position.z);
 
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
-/*     planet.position.copy(planetPhisical.position);
-    planet.quaternion.copy(planetPhisical.quaternion);
-
-    for(var i = 0; i< mountains.length; i++){
-        mountains[i][0].position.copy(mountains[i][1].position);
-        mountains[i][0].quaternion.copy(mountains[i][1].quaternion);
-    }
- */
 	renderer.render( scene, currentCamera );
 }
 
 
 
+function tileToPosition(tileX, tileY) {
+        const hexWidth = 1.77 * hexScaleFactor; 
+        const hexHeight = 1.535 * hexScaleFactor; 
+            const x = (tileX + (tileY % 2) * 0.5) * hexWidth;
+        const y = tileY * hexHeight;
+    
+        return new THREE.Vector2(x, y);
+}
+  
+  function hexGeometry(height, position) {
+    let geo  = new THREE.CylinderGeometry(1*hexScaleFactor, 1*hexScaleFactor, height*hexScaleFactor, 6, 1, false);
+    geo.translate(position.x, height*hexScaleFactor * 0.5, position.y);
+  
+    return geo;
+  }
 
+function hex(height, position){
+    let geo = hexGeometry(height,position);
+    hexagonGeometries = mergeBufferGeometries([hexagonGeometries,geo]);
+}
 
