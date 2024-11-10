@@ -32,6 +32,8 @@ const topCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.in
 const bottomCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
     bottomCamera.position.set(1, -2, -2);
 
+const lateralCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    lateralCamera.position.set(5,1,1);
 
 let currentCamera = rearCamera;
 
@@ -113,6 +115,10 @@ function onKeyDown(event) {
     }
     if(event.key == '4'){
         currentCamera = bottomCamera;
+        currentCamera.updateProjectionMatrix();
+    }
+    if(event.key == '5'){
+        currentCamera = lateralCamera;
         currentCamera.updateProjectionMatrix();
     }
     if(event.key == 'j' || event.key == 'J'){
@@ -235,10 +241,12 @@ body.add(frontCamera);
 body.add(rearCamera);
 body.add(topCamera);
 body.add(bottomCamera);
+body.add(lateralCamera);
 frontCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 rearCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 topCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
+lateralCamera.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 
 scene.add(body);
 
