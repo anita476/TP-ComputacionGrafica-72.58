@@ -3,8 +3,14 @@ import * as CANNON from 'cannon-es'
 import { Vehicle } from './components/Vehicle';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createPlanet, getPlanetPhisical , createMountainMeshesAndBodies , getMountains, createStars} from './components/planetUtils.js';
+import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
-let hexScaleFactor = 10;
+import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
+import { BoxGeometry } from 'three/webgpu';
+
+
+let hexagonGeometries = new THREE.BoxGeometry(0,0,0);
+let hexScaleFactor = 20;
 let bladesHorizontal = true;
 let click = 0;
 let model;
@@ -262,7 +268,7 @@ world.addBody(bodyPhisical);
 
 
 bodyPhisical.position.z = 0;
-bodyPhisical.position.y = 100;
+bodyPhisical.position.y = 200;
 bodyPhisical.position.x += 2;
 body.position.copy(bodyPhisical.position);
 
