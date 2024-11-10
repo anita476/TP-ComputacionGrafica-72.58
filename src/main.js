@@ -126,23 +126,47 @@ function onKeyDown(event) {
     if(event.key === 's' || event.key === 'S'){
         const forwardImpulse = new CANNON.Vec3(0, 0, -forwardImpulseStrength);  
         bodyPhisical.applyImpulse(forwardImpulse, bodyPhisical.position);
+        bladesHorizontal = 0;
+
+        if(!bladesHorizontal){
+            body.turnBladesVertical();
+        }
     }
     if(event.key == 'w' || event.key === 'W'){
         const backwardsImpulse = new CANNON.Vec3(0, 0, forwardImpulseStrength);  
         bodyPhisical.applyImpulse(backwardsImpulse, bodyPhisical.position);
+        bladesHorizontal = 0;
+
+        if(!bladesHorizontal){
+            body.turnBladesVertical();
+        }
     }
     if(event.key === ' ' || event.key === 'Spacebar'){
         const upwardImpulse = new CANNON.Vec3(0, riseImpulseStrength, 0); 
         bodyPhisical.applyImpulse(upwardImpulse, bodyPhisical.position);
-        console.log('Applied upward impulse:', upwardImpulse);
+        bladesHorizontal = 1;
+
+        if(bladesHorizontal){
+            body.turnBladesHorizontal();
+        }
     }
     if(event.key == 'a' || event.key == 'A'){
         const sideImpulse = new CANNON.Vec3(sideImpulseStrength, 0, 0); 
         bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
+        bladesHorizontal = 0;
+
+        if(!bladesHorizontal){
+            body.turnBladesVertical();
+        }
     }
     if(event.key == 'd' || event.key == 'D'){
         const sideImpulse = new CANNON.Vec3(-sideImpulseStrength, 0, 0); 
         bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
+        bladesHorizontal = 0;
+
+        if(!bladesHorizontal){
+            body.turnBladesVertical();
+        }
     }
     if (event.key === 'h' || event.key === 'H') {
         if (click === 0) {
@@ -194,7 +218,7 @@ function onKeyDown(event) {
 }
 window.addEventListener('keydown', onKeyDown);
 
-function onClick(){
+/* function onClick(){
     bladesHorizontal = !bladesHorizontal;
     if(bladesHorizontal){
         body.turnBladesHorizontal();
@@ -203,7 +227,7 @@ function onClick(){
         body.turnBladesVertical();
     }
 }
-window.addEventListener('click',onClick,false);
+window.addEventListener('click',onClick,false); */
 
 
 const body = new Vehicle();
@@ -346,14 +370,14 @@ function animate(){
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
-    planet.position.copy(planetPhisical.position);
+/*     planet.position.copy(planetPhisical.position);
     planet.quaternion.copy(planetPhisical.quaternion);
 
     for(var i = 0; i< mountains.length; i++){
         mountains[i][0].position.copy(mountains[i][1].position);
         mountains[i][0].quaternion.copy(mountains[i][1].quaternion);
     }
-
+ */
 	renderer.render( scene, currentCamera );
 }
 
