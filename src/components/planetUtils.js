@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import SimplexNoise from 'simplex-noise';
 
-const radius = 700; 
+const radius = 400; 
 const widthSegments = 64;
 const heightSegments = 64;
 const simplex = new SimplexNoise();
@@ -77,7 +77,7 @@ function createRandomCone(minHeight, maxHeight, minRadius, maxRadius) {
     }); 
     
     // Create a cylinder shape for the cone
-    const coneShape = new CANNON.Cylinder(0,radius,height,20);
+    const coneShape = new CANNON.Cylinder(radius/2,radius,height,20);
     coneBody.addShape(coneShape);
 
 

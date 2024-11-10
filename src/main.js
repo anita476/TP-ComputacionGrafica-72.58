@@ -83,8 +83,33 @@ function waitForAnimation(action) {
         checkAnimation(); // Start checking
     });
 }
-
+const speed=0.6;
+const riseImpulseStrength = 15;
+const forwardImpulseStrength = 10;
+const sideImpulseStrength = 10;
 function onKeyDown(event) {
+    if(event.key === 'w' || event.key === 'W'){
+        
+        const forwardImpulse = new CANNON.Vec3(0, 0, -forwardImpulseStrength);  
+        bodyPhisical.applyImpulse(forwardImpulse, bodyPhisical.position);
+    }
+    if(event.key == 's' || event.key === 'S'){
+        const backwardsImpulse = new CANNON.Vec3(0, 0, forwardImpulseStrength);  
+        bodyPhisical.applyImpulse(backwardsImpulse, bodyPhisical.position);
+    }
+    if(event.key == 'u' || event.key == 'U'){
+        const upwardImpulse = new CANNON.Vec3(0, riseImpulseStrength, 0); 
+        bodyPhisical.applyImpulse(upwardImpulse, bodyPhisical.position);
+        console.log('Applied upward impulse:', upwardImpulse);
+    }
+    if(event.key == 'd' || event.key == 'D'){
+        const sideImpulse = new CANNON.Vec3(sideImpulseStrength, 0, 0); 
+        bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
+    }
+    if(event.key == 'a' || event.key == 'A'){
+        const sideImpulse = new CANNON.Vec3(-sideImpulseStrength, 0, 0); 
+        bodyPhisical.applyImpulse(sideImpulse, bodyPhisical.position);
+    }
     if (event.key === 'h' || event.key === 'H') {
         if (click === 0) {
             closeDoorsAc1.stop();
@@ -178,7 +203,7 @@ world.addBody(bodyPhisical);
 
 
 bodyPhisical.position.z = 0;
-bodyPhisical.position.y = 1000;
+bodyPhisical.position.y = 800;
 bodyPhisical.position.x += 2;
 body.position.copy(bodyPhisical.position);
 
