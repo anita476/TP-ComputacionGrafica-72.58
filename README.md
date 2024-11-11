@@ -21,7 +21,7 @@ Utilice `space` para elevar el vehículo.
 ### Animaciones
 Utilice `h` para abrir y cerrar las puertas y la escalera
 
-Utilice `j` para plegar y desplegar las patas del vehículo
+Utilice `j` para retraer y desplegar las patas del vehículo
 
 ### Cámaras
 
