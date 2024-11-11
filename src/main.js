@@ -31,9 +31,11 @@ const topCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.in
     topCamera.position.set(1, 10,-1);
 const bottomCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
     bottomCamera.position.set(1, -2, -2);
+const lateralCameraLeft = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    lateralCameraLeft.position.set(5,1,1);
+const lateralCameraRight = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+lateralCameraRight.position.set(-3,1,1);
 
-const lateralCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    lateralCamera.position.set(5,1,1);
 
 let currentCamera = rearCamera;
 
@@ -44,9 +46,9 @@ document.body.appendChild( renderer.domElement )
 
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
 
-
-const helper = new THREE.AxesHelper(1000); 
-scene.add(helper)
+/* Dont need the helper anymore */
+/* const helper = new THREE.AxesHelper(1000); 
+scene.add(helper) */
 
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
@@ -118,7 +120,11 @@ function onKeyDown(event) {
         currentCamera.updateProjectionMatrix();
     }
     if(event.key == '5'){
-        currentCamera = lateralCamera;
+        currentCamera = lateralCameraLeft;
+        currentCamera.updateProjectionMatrix();
+    }
+    if(event.key == '6'){
+        currentCamera = lateralCameraRight;
         currentCamera.updateProjectionMatrix();
     }
     if(event.key == 'j' || event.key == 'J'){
@@ -241,12 +247,14 @@ body.add(frontCamera);
 body.add(rearCamera);
 body.add(topCamera);
 body.add(bottomCamera);
-body.add(lateralCamera);
+body.add(lateralCameraLeft);
+body.add(lateralCameraRight);
 frontCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 rearCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 topCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
-lateralCamera.lookAt(body.position.x+2, body.position.y, body.position.z+1);
+lateralCameraLeft.lookAt(body.position.x+2, body.position.y, body.position.z+1);
+lateralCameraRight.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 
 scene.add(body);
 
