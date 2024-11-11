@@ -19,7 +19,7 @@ Utilice `w` `a` `s` `d` para mover el vehículo sobre el plano de superficie
 Utilice `space` para elevar el vehículo. 
 
 ### Animaciones
-Utilice `h` para abrir y cerrar las puertas
+Utilice `h` para abrir y cerrar las puertas y la escalera
 
 Utilice `j` para plegar y desplegar las patas del vehículo
 
