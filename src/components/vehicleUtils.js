@@ -78,6 +78,7 @@ export function createTurbine(){
     turbineGroup.add(wheel);
     turbineGroup.add(axis);
     turbineGroup.scale.set(3.6,3.6,3.6);
+
     return turbineGroup;
 }
 //Helix creation
@@ -323,19 +324,6 @@ export function createBodyRings(){
         return ringGroup;
 }
 
-export function createPlanetScene(radius = 100) {
-    const scene = new THREE.Scene();
-    
-
-    // Create a group to hold the camera and any objects that should move with it
-    const cameraGroup = new THREE.Group();
-    scene.add(cameraGroup);
-    
-    // Function to update position on the planet
-
-    return { scene, cameraGroup };
-}
-
 export function createFrontLeft(){
     const turbine1  = new Turbine();
     turbine1.scale.set(0.15,0.15,0.15);
@@ -351,6 +339,24 @@ export function createFrontLeft(){
     turbine1.position.x -= (bodyDepth/2);
     turbine1.position.z += (bodyDepth);
     turbine1.position.z -= ring1Depth * 4;
+    const times = [0, 0.50, 0.75]; 
+    const values = [0, -Math.PI / 60, -Math.PI / 30]; 
+    const rotationTrack = new THREE.KeyframeTrack('.rotation[z]',
+    times, 
+    values 
+    );
+    const clip = new THREE.AnimationClip('rotateForward', -1, [rotationTrack]);
+    turbine1.animations.push(clip);
+
+    const times2 = [0, 0.50, 0.75]; 
+    const values2 = [ -Math.PI / 30, -Math.PI / 60, 0, ]; 
+    const rotationTrack2 = new THREE.KeyframeTrack(
+    '.rotation[z]',
+    times2, 
+    values2 
+    );
+    const clip2 = new THREE.AnimationClip('rotateBackward', -1, [rotationTrack2]);
+    turbine1.animations.push(clip2);
     return turbine1;
 }
 export function createBackLeft (){
@@ -385,6 +391,25 @@ export function createFrontRight(){
     turbine1.position.x += bodyDepth + bodyDepth/2;
     turbine1.position.z += bodyDepth;
     turbine1.position.z -= ring1Depth * 4;
+
+    const times = [0, 0.50, 0.75]; 
+    const values = [0, Math.PI / 60, Math.PI / 30]; 
+    const rotationTrack = new THREE.KeyframeTrack('.rotation[z]',
+    times, 
+    values 
+    );
+    const clip = new THREE.AnimationClip('rotateForward', -1, [rotationTrack]);
+    turbine1.animations.push(clip);
+
+    const times2 = [0, 0.50, 0.75]; 
+    const values2 = [ Math.PI / 30, Math.PI / 60, 0, ]; 
+    const rotationTrack2 = new THREE.KeyframeTrack(
+    '.rotation[z]',
+    times2, 
+    values2 
+    );
+    const clip2 = new THREE.AnimationClip('rotateBackward', -1, [rotationTrack2]);
+    turbine1.animations.push(clip2);
     return turbine1;
 }
 export function createBackRight(){
@@ -518,7 +543,7 @@ export function createRightDoor(){
     const frame = totalBodyLength/(4*5);
     door2.position.x += (totalBodyLength/2 + totalBodyLength/8) ;
     //define door opening animation
-    const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; // Animation times in seconds
+    const times = [0, 0.25 ,0.5, 0.75, 1, 1.25]; 
     const values = [
     door2.position.x, door2.position.y, door2.position.z, 
     door2.position.x + frame, door2.position.y, door2.position.z,
@@ -550,3 +575,5 @@ export function createInside(){ // maybe a picture afterwards ?
     inside.position.z -= 0.001;
     return inside;
 }
+
+

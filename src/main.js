@@ -6,12 +6,12 @@ import { createStars} from './components/planetUtils.js';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
 import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-import { BoxGeometry } from 'three/webgpu';
 
 
 let hexagonGeometries = new THREE.BoxGeometry(0,0,0);
 let hexScaleFactor = 20;
 let bladesHorizontal = true;
+let retractedTurbines = false;
 let click = 0;
 let model;
 let legsDown = 1;
@@ -237,11 +237,62 @@ function onKeyDown(event) {
             }
         }
     }
+    if(event.key == 'k' || event.key == 'K'){
+        if(retractedTurbines){
+            retractedTurbines = 0;
+            forwardTurbines1.stop();
+            backwardTurbines1.clampWhenFinished = true; 
+            backwardTurbines1.setLoop(THREE.LoopOnce);
+            backwardTurbines1.play();
+
+            forwardTurbines2.stop();
+            backwardTurbines2.clampWhenFinished = true; 
+            backwardTurbines2.setLoop(THREE.LoopOnce);
+            backwardTurbines2.play();
+
+            forwardTurbines3.stop();
+            backwardTurbines3.clampWhenFinished = true; 
+            backwardTurbines3.setLoop(THREE.LoopOnce);
+            backwardTurbines3.play();
+
+            forwardTurbines4.stop();
+            backwardTurbines4.clampWhenFinished = true; 
+            backwardTurbines4.setLoop(THREE.LoopOnce);
+            backwardTurbines4.play();
+        }
+        else{
+            retractedTurbines = 1;
+            backwardTurbines1.stop();
+            forwardTurbines1.clampWhenFinished = true; 
+            forwardTurbines1.setLoop(THREE.LoopOnce);
+            forwardTurbines1.play();
+
+            backwardTurbines2.stop();
+            forwardTurbines2.clampWhenFinished = true; 
+            forwardTurbines2.setLoop(THREE.LoopOnce);
+            forwardTurbines2.play();
+
+            backwardTurbines3.stop();
+            forwardTurbines3.clampWhenFinished = true; 
+            forwardTurbines3.setLoop(THREE.LoopOnce);
+            forwardTurbines3.play();
+
+            backwardTurbines4.stop();
+            forwardTurbines4.clampWhenFinished = true; 
+            forwardTurbines4.setLoop(THREE.LoopOnce);
+            forwardTurbines4.play();
+
+
+        }
+
+        
+    }
 }
 window.addEventListener('keydown', onKeyDown);
 
 const body = new Vehicle();
 body.scale.set(2,2,2);
+
 /*-- Add cameras to the models so they move with it!  --*/
 body.add(frontCamera);
 body.add(rearCamera);
@@ -266,16 +317,14 @@ const box = new THREE.Box3().setFromObject(body);
 
 const size = new THREE.Vector3();
 const center = new THREE.Vector3();
-box.getSize(size); // Get the size of the bounding box
-box.getCenter(center); // Get the center of the bounding box
+box.getSize(size); 
+box.getCenter(center); 
 
-// Create a Cannon.js body
 const bodyPhisical = new CANNON.Body({
-    mass: 5, // Adjust mass as needed
-    position: new CANNON.Vec3(center.x, center.y, center.z), // Set the position to the center of the bounding box
+    mass: 5, 
+    position: new CANNON.Vec3(center.x, center.y, center.z), 
 });
-console.log(size);
-console.log(center);
+
 
 // Create a shape from the bounding box dimensions
 const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2 + 0.5, size.z / 2));
@@ -284,10 +333,8 @@ bodyPhisical.fixedRotation = false;
 bodyPhisical.linearDamping = 0.5; 
 bodyPhisical.angularDamping = 1; 
 
-// Now add the body to your Cannon.js world
 world.addBody(bodyPhisical);
 
-/* Add plane in Cannon-ES for testing */
 
 
 bodyPhisical.position.z = 0;
@@ -333,6 +380,26 @@ const upLegss = mixer3.clipAction(body.legs.children[0].animations[0]);
 const mixer4 = new THREE.AnimationMixer(body.legs);
 const downLegs = mixer4.clipAction(body.legs.children[0].animations[1]);
 
+/* turbines animation */
+//front left turbine
+const mixer5 = new THREE.AnimationMixer(body.turbines.children[0]);
+const forwardTurbines1 = mixer5.clipAction(body.turbines.children[0].animations[0]);
+const backwardTurbines1 = mixer5.clipAction(body.turbines.children[0].animations[1]);
+//back left turbine
+const mixer6 = new THREE.AnimationMixer(body.turbines.children[2]);
+const forwardTurbines2 = mixer6.clipAction(body.turbines.children[0].animations[0]);
+const backwardTurbines2 = mixer6.clipAction(body.turbines.children[0].animations[1]);
+
+//front right turbine
+const mixer7 = new THREE.AnimationMixer(body.turbines.children[1]);
+const forwardTurbines3 = mixer7.clipAction(body.turbines.children[1].animations[0]);
+const backwardTurbines3 = mixer7.clipAction(body.turbines.children[1].animations[1]);
+
+//back rigth turbine
+const mixer8 = new THREE.AnimationMixer(body.turbines.children[3]);
+const forwardTurbines4 = mixer8.clipAction(body.turbines.children[1].animations[0]);
+const backwardTurbines4 = mixer8.clipAction(body.turbines.children[1].animations[1]);
+
 const clock = new THREE.Clock();
 
 
@@ -377,6 +444,10 @@ function animate(){
     mixer2.update(delta);
     mixer3.update(delta);
     mixer4.update(delta);
+    mixer5.update(delta);
+    mixer6.update(delta);
+    mixer7.update(delta);
+    mixer8.update(delta);
 
     if (bodyPhisical.angle > 0.1) {
         bodyPhisical.angle = 0; // Simple stabilization

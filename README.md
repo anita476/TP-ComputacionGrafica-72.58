@@ -23,6 +23,8 @@ Utilice `h` para abrir y cerrar las puertas y la escalera
 
 Utilice `j` para retraer y desplegar las patas del vehículo
 
+Utilice `k` para subir y bajar las turbinas
+
 ### Cámaras
 
 Tecla `1` : Cámara trasera (default)
