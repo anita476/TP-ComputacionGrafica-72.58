@@ -364,6 +364,68 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     body.add(model);
 });
 
+function generateHeightmap(width, height, scale = 10) {
+    const data = [];
+    for (let y = 0; y < height; y++) {
+      const row = [];
+      for (let x = 0; x < width; x++) {
+        const value = simplex.noise2D(x / scale, y / scale);
+        row.push(value * 10);
+      }
+      data.push(row);
+    }
+    return data;
+  }
+  
+  const width = 400;
+  const height = 400;
+  const heightmap = generateHeightmap(width, height);
+  
+  const shape2 = new CANNON.Heightfield(heightmap, { elementSize: 1 });
+  const groundBody = new CANNON.Body({
+    mass: 0, // Static body (no movement)
+    position: new CANNON.Vec3(0, 0, 0)
+  });
+  groundBody.addShape(shape2);
+  world.addBody(groundBody);
+  
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  const normals = [];
+  const indices = [];
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+        const px = x;
+        const py = y;
+        const pz = heightmap[y][x]; 
+        positions.push(px, pz, py);
+        const nx = 0;
+        const ny = 1;
+        const nz = 0;
+        normals.push(nx, ny, nz);
+        if (x < width - 1 && y < height - 1) {
+            const i = y * width + x;
+            const i1 = i + 1;
+            const i2 = i + width;
+            const i3 = i2 + 1;
+    
+        indices.push(i, i1, i2);
+        indices.push(i1, i3, i2);
+      }
+    }
+  }
+geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  geometry.setIndex(indices);
+  
+  const material = new THREE.MeshBasicMaterial({ color: 0xF45670, wireframe:true, side: THREE.DoubleSide });
+  const terrainMesh = new THREE.Mesh(geometry, material);
+  scene.add(terrainMesh);
+
+  const rotationAngle = Math.PI / 2; 
+  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), rotationAngle); 
+  groundBody.position.set(0, 0, 0);
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
@@ -403,32 +465,6 @@ const backwardTurbines4 = mixer8.clipAction(body.turbines.children[1].animations
 const clock = new THREE.Clock();
 
 
-/*-- BUILDING HEX-MAP ---*/
-
-for(let i = -15; i <= 15; i++) {
-    for(let j = -15; j <= 15; j++) {
-      let position = tileToPosition(i, j);
-        //if(position.length() > 50) continue;
-
-        let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-        noise = Math.pow(noise, 1.5);
-
-      hex(noise * 10, position);
-
-      let convertedPosition = new CANNON.Vec3(position.x, noise *hexScaleFactor* 10, position.y);
-        
-      const body = new CANNON.Body({
-        mass: 0,
-        position: new CANNON.Vec3(convertedPosition.x,convertedPosition.y,convertedPosition.z),
-        shape: new CANNON.Cylinder(1*hexScaleFactor, 1*hexScaleFactor, 10, 6, 1)
-        });
-        world.addBody(body);   
-    } 
-}
-let hexagonMesh = new THREE.Mesh(
-    hexagonGeometries, new THREE.MeshStandardMaterial({color: 0x110082, roughness:0, metalness:0.99}));
-scene.add(hexagonMesh);
-
 renderer.setAnimationLoop(animate); //animation loop
 function animate(){
     world.fixedStep();
@@ -458,27 +494,3 @@ function animate(){
 
 	renderer.render( scene, currentCamera );
 }
-
-
-
-function tileToPosition(tileX, tileY) {
-        const hexWidth = 1.77 * hexScaleFactor; 
-        const hexHeight = 1.535 * hexScaleFactor; 
-            const x = (tileX + (tileY % 2) * 0.5) * hexWidth;
-        const y = tileY * hexHeight;
-    
-        return new THREE.Vector2(x, y);
-}
-  
-  function hexGeometry(height, position) {
-    let geo  = new THREE.CylinderGeometry(1*hexScaleFactor, 1*hexScaleFactor, height*hexScaleFactor, 6, 1, false);
-    geo.translate(position.x, height*hexScaleFactor * 0.5, position.y);
-  
-    return geo;
-  }
-
-function hex(height, position){
-    let geo = hexGeometry(height,position);
-    hexagonGeometries = mergeBufferGeometries([hexagonGeometries,geo]);
-}
-
