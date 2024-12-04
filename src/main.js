@@ -5,16 +5,15 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createStars} from './components/planetUtils.js';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
-import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
 
-let hexagonGeometries = new THREE.BoxGeometry(0,0,0);
-let hexScaleFactor = 20;
 let bladesHorizontal = true;
 let retractedTurbines = false;
 let click = 0;
 let model;
 let legsDown = 1;
+const width = 400;
+const height = 400;
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xAAAAAA, 0.002);
 
@@ -45,10 +44,13 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement )
 
 renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of device pixel ratio -> optimize system resources usage
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 
 /* Dont need the helper anymore */
-/* const helper = new THREE.AxesHelper(1000); 
-scene.add(helper) */
+const helper = new THREE.AxesHelper(1000); 
+scene.add(helper)
 
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
@@ -64,18 +66,28 @@ audioLoader.load('/OuterWilds.mp3', (buffer) => {
     sound.play(); 
 }); 
  
-const ambientLight = new THREE.AmbientLight( 0x000000 );
+const ambientLight = new THREE.AmbientLight( 0x555555,1 );
+ambientLight.shadow = true;
 scene.add( ambientLight );
 
 
-
-const light2 = new THREE.DirectionalLight( 0xffffff, 30 );
+const light2 = new THREE.DirectionalLight( 0xffffff, 1 );
 light2.position.set( 100, 400, 100 );
+light2.shadow.bias = -0.5;
+light2.castShadow = true;
+light2.shadow.mapSize.width = 2048;
 scene.add( light2 );
 
-const light3 = new THREE.DirectionalLight( 0xffffff, 3 );
-light3.position.set( - 100, - 400, - 100 );
-scene.add( light3 );
+
+const spotLight = new THREE.SpotLight(0xffffff, 1);  // White light with intensity 1
+spotLight.position.set(0, 100, 0);  // Position of the light source
+spotLight.target.position.set(0, 0, 0);  // The target (you can set it to where you want the light to focus)
+spotLight.angle = Math.PI / 4;  // The angle of the light cone
+spotLight.penumbra = 0.1;  // Softness of the edge of the light cone
+spotLight.castShadow = true;
+
+scene.add(spotLight);
+scene.add(spotLight.target);  // The target must be added to the scene
 
 
 window.addEventListener('resize', onWindowResize, false); //auto update size of window
@@ -307,8 +319,12 @@ bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 lateralCameraLeft.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 lateralCameraRight.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 
+body.traverse((child) => {
+    child.castShadow = true;
+    });
+body.castShadow = true;
 scene.add(body);
-
+ 
 const stars = createStars();
 
 scene.add(stars);
@@ -341,7 +357,6 @@ bodyPhisical.position.z = 0;
 bodyPhisical.position.y = 200;
 bodyPhisical.position.x += 2;
 body.position.copy(bodyPhisical.position);
-
 document.body.appendChild(renderer.domElement);
 
 //add stairs
@@ -363,69 +378,85 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
     scene.add(model);
     body.add(model);
 });
+  
 
-function generateHeightmap(width, height, scale = 10) {
-    const data = [];
-    for (let y = 0; y < height; y++) {
-      const row = [];
-      for (let x = 0; x < width; x++) {
-        const value = simplex.noise2D(x / scale, y / scale);
-        row.push(value * 10);
-      }
-      data.push(row);
-    }
-    return data;
-  }
-  
-  const width = 400;
-  const height = 400;
-  const heightmap = generateHeightmap(width, height);
-  
-  const shape2 = new CANNON.Heightfield(heightmap, { elementSize: 1 });
-  const groundBody = new CANNON.Body({
+const heightmap = generateHeightmap(width, height);  
+const shape2 = new CANNON.Heightfield(heightmap, { elementSize: 1 });
+const groundBody = new CANNON.Body({
     mass: 0, // Static body (no movement)
     position: new CANNON.Vec3(0, 0, 0)
-  });
-  groundBody.addShape(shape2);
-  world.addBody(groundBody);
+});
+groundBody.addShape(shape2);
+world.addBody(groundBody);
   
-  const geometry = new THREE.BufferGeometry();
-  const positions = [];
-  const normals = [];
-  const indices = [];
-  
-  for (let y = 0; y < height; y++) {
+const textureLoader = new THREE.TextureLoader();
+const terrainTexture = textureLoader.load('sand.jpg');  
+terrainTexture.wrapS = terrainTexture.wrapT = THREE.RepeatWrapping;
+terrainTexture.repeat.set(10, 10);  
+const bumpTexture = textureLoader.load('bump.jpg');
+bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+bumpTexture.repeat.set(10, 10);
+
+const geometry = new THREE.BufferGeometry();
+const positions = [];
+const uvs = [];  
+const normals = [];
+const indices = [];
+
+for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
         const px = x;
         const py = y;
         const pz = heightmap[y][x]; 
         positions.push(px, pz, py);
-        const nx = 0;
-        const ny = 1;
-        const nz = 0;
-        normals.push(nx, ny, nz);
+        
+        const u = x / width;
+        const v = y / height;
+        uvs.push(u, v);
+
+        // Temporarily set normals to zero. They will be recalculated later.
+        normals.push(0, 0, 0);
+
         if (x < width - 1 && y < height - 1) {
             const i = y * width + x;
             const i1 = i + 1;
             const i2 = i + width;
             const i3 = i2 + 1;
-    
-        indices.push(i, i1, i2);
-        indices.push(i1, i3, i2);
-      }
-    }
-  }
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-  geometry.setIndex(indices);
-  
-  const material = new THREE.MeshBasicMaterial({ color: 0xF45670, wireframe:true, side: THREE.DoubleSide });
-  const terrainMesh = new THREE.Mesh(geometry, material);
-  scene.add(terrainMesh);
 
-  const rotationAngle = Math.PI / 2; 
-  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), rotationAngle); 
-  groundBody.position.set(0, 0, 0);
+            indices.push(i, i1, i2);
+            indices.push(i1, i3, i2);
+        }
+    }
+}
+
+geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));  // Set UVs
+geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+geometry.setIndex(indices);
+
+geometry.computeVertexNormals();
+
+const material = new THREE.MeshStandardMaterial({
+    map: terrainTexture,
+    bumpScale: 1.5,
+    bumpMap: bumpTexture,
+    side: THREE.DoubleSide,
+    roughness: 1,
+});
+
+const terrainMesh = new THREE.Mesh(geometry, material);
+terrainMesh.castShadow = true;
+terrainMesh.receiveShadow = true;
+
+scene.add(terrainMesh);
+
+const rotationAngle = Math.PI / 2; 
+groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), rotationAngle); 
+
+terrainMesh.position.x = -height/2;
+terrainMesh.position.z = -height/2;
+groundBody.position.copy(terrainMesh.position);
+
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
@@ -492,5 +523,21 @@ function animate(){
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
+
 	renderer.render( scene, currentCamera );
+}
+
+
+
+function generateHeightmap(width, height, scale = 50) {
+    const data = [];
+    for (let y = 0; y < height; y++) {
+      const row = [];
+      for (let x = 0; x < width; x++) {
+        const value = simplex.noise2D(x / scale , y / scale );
+        row.push(value * scale / 2);
+      }
+      data.push(row);
+    }
+    return data;
 }
