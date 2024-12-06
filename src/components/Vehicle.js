@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import {BLLeg, BRLeg, createBackLeft, createBackRight, createBody , createBodyRings, createFrontLeft, createFrontRight, createInside, createLeftDoor, createRightDoor, FLLeg, FRLeg} from './vehicleUtils.js';
-import { exp } from 'three/webgpu';
 
 
 

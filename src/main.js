@@ -51,7 +51,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 /* Dont need the helper anymore */
 const helper = new THREE.AxesHelper(1000); 
 scene.add(helper)
-
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
 
@@ -71,12 +70,21 @@ ambientLight.shadow = true;
 scene.add( ambientLight );
 
 
-const light2 = new THREE.DirectionalLight( 0xffffff, 1 );
-light2.position.set( 100, 400, 100 );
-light2.shadow.bias = -0.5;
+const light2 = new THREE.DirectionalLight( 0xffffff, 1.5 );
+light2.position.set( 10, 150, 0 );
 light2.castShadow = true;
-light2.shadow.mapSize.width = 2048;
 scene.add( light2 );
+
+/* to increment the rectangle where the shadows are shown*/
+light2.shadow.camera.left = -200;   
+light2.shadow.camera.right = 200;   
+light2.shadow.camera.top = 200;     
+light2.shadow.camera.bottom = -200; 
+light2.shadow.camera.near = 1;   
+light2.shadow.camera.far = 1000;  
+
+light2.shadow.mapSize.width = 2048; 
+light2.shadow.mapSize.height = 2048;
 
 
 const spotLight = new THREE.SpotLight(0xffffff, 1);  // White light with intensity 1
@@ -319,10 +327,7 @@ bottomCamera.lookAt(body.position.x+2, body.position.y, body.position.z);
 lateralCameraLeft.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 lateralCameraRight.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 
-body.traverse((child) => {
-    child.castShadow = true;
-    });
-body.castShadow = true;
+
 scene.add(body);
  
 const stars = createStars();
@@ -456,7 +461,6 @@ groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), rotationAngle);
 terrainMesh.position.x = -height/2;
 terrainMesh.position.z = -height/2;
 groundBody.position.copy(terrainMesh.position);
-
 
 const mixer1 = new THREE.AnimationMixer(body.doors.door1);
 const openDoorsAc1 = mixer1.clipAction(body.doors.door1.animations[0]);
