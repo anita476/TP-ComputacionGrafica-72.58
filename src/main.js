@@ -12,6 +12,7 @@ let retractedTurbines = false;
 let click = 0;
 let model;
 let legsDown = 1;
+let lightsOn = 1;
 const width = 400;
 const height = 400;
 const scene = new THREE.Scene();
@@ -330,6 +331,16 @@ function onKeyDown(event) {
         }
 
         
+    }
+    if(event.key == 'l' || event.key == 'L'){
+        if(lightsOn){
+            body.turnLightsOff();
+            lightsOn = 0;
+        }
+        else if(lightsOn == 0){
+            body.turnLightsOn();
+            lightsOn = 1;
+        }
     }
 }
 window.addEventListener('keydown', onKeyDown);

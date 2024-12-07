@@ -59,6 +59,30 @@ class Vehicle extends THREE.Group{
             }
           });
     }
+    turnLightsOff(){
+        this.body.traverse((child)=>{
+            if(child.isPointLight) {
+                child.intensity = 0;
+            }
+        });
+        this.rings.traverse((child)=>{
+            if(child.isPointLight) {
+                child.intensity = 0;
+            }
+        })
+    }
+    turnLightsOn(){
+        this.body.traverse((child)=>{
+            if(child.isPointLight){
+                child.intensity = 0.5;
+            }
+        });
+        this.rings.traverse((child)=>{
+            if(child.isPointLight){
+                child.intensity = 0.5;
+            }
+        })
+    }
     animationVertical(rotationSpeed){
         this.turbines.children.forEach(child => { child.animationVertical(rotationSpeed)});
     }
