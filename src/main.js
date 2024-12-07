@@ -222,6 +222,7 @@ function onKeyDown(event) {
     }
     if (event.key === 'h' || event.key === 'H') {
         if (click === 0) {
+            body.turnBackLightRed();
             closeDoorsAc1.stop();
             closeDoorsAc2.stop();
             openDoorsAc1.clampWhenFinished = true; 
@@ -244,9 +245,12 @@ function onKeyDown(event) {
 
                                 }
                             });
+                            body.turnBackLightGreen();
                         });
             
         } else if (click === 1) {
+            body.turnBackLightRed();
+            
             openDoorsAc1.stop();
             openDoorsAc2.stop();
     
@@ -269,6 +273,12 @@ function onKeyDown(event) {
                     }
                 });
             }
+            Promise.all([
+                waitForAnimation(closeDoorsAc1),
+                waitForAnimation(closeDoorsAc2)
+            ]).then(() => {
+                body.turnBackLightNormal();
+            });
         }
     }
     if(event.key == 'k' || event.key == 'K'){
