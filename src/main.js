@@ -47,6 +47,10 @@ renderer.setPixelRatio(window.devicePixelRatio * 0.75); // Reduce to 75% of devi
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
 /* Dont need the helper anymore */
 const helper = new THREE.AxesHelper(1000); 
@@ -69,9 +73,8 @@ const ambientLight = new THREE.AmbientLight( 0x555555,1 );
 ambientLight.shadow = true;
 scene.add( ambientLight );
 
-
-const light2 = new THREE.DirectionalLight( 0xffffff, 1.5 );
-light2.position.set( 10, 150, 0 );
+const light2 = new THREE.DirectionalLight( 0xfc7703, 1.5 );
+light2.position.set( 100, 150, 0 );
 light2.castShadow = true;
 scene.add( light2 );
 
@@ -87,15 +90,22 @@ light2.shadow.mapSize.width = 2048;
 light2.shadow.mapSize.height = 2048;
 
 
-const spotLight = new THREE.SpotLight(0xffffff, 1);  // White light with intensity 1
-spotLight.position.set(0, 100, 0);  // Position of the light source
-spotLight.target.position.set(0, 0, 0);  // The target (you can set it to where you want the light to focus)
-spotLight.angle = Math.PI / 4;  // The angle of the light cone
-spotLight.penumbra = 0.1;  // Softness of the edge of the light cone
-spotLight.castShadow = true;
+const light3 = new THREE.DirectionalLight( 0xffffff, 0.1 );
+light3.position.set( -10, 100, -100 );
+light3.castShadow = true;
+scene.add( light3 );
 
-scene.add(spotLight);
-scene.add(spotLight.target);  // The target must be added to the scene
+/* to increment the rectangle where the shadows are shown*/
+light3.shadow.camera.left = -200;   
+light3.shadow.camera.right = 200;   
+light3.shadow.camera.top = 200;     
+light3.shadow.camera.bottom = -200; 
+light3.shadow.camera.near = 1;   
+light3.shadow.camera.far = 1000;  
+
+light3.shadow.mapSize.width = 2048; 
+light3.shadow.mapSize.height = 2048;
+
 
 
 window.addEventListener('resize', onWindowResize, false); //auto update size of window
@@ -230,6 +240,8 @@ function onKeyDown(event) {
                                 if (child.isMesh) {
                                     child.material.transparent = false;
                                     child.material.opacity = 1; // Set opacity to fully visible
+                                    child.castShadow = true;
+
                                 }
                             });
                         });
@@ -252,6 +264,8 @@ function onKeyDown(event) {
                     if (child.isMesh) {
                         child.material.transparent = true;
                         child.material.opacity = 0; // Fully transparent
+                        child.castShadow = false;
+
                     }
                 });
             }
@@ -378,6 +392,8 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
         if (child.isMesh) {
             child.material.transparent = true;
             child.material.opacity = 0; // Start fully transparent
+            child.castShadow = true;
+            child.receiveShadow = true;
         }
     });
     scene.add(model);
