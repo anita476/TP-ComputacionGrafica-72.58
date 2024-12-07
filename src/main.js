@@ -50,7 +50,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.physicallyCorrectLights = true;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.2;
 
 /* Dont need the helper anymore */
 const helper = new THREE.AxesHelper(1000); 
@@ -58,7 +58,7 @@ scene.add(helper)
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
 
-const listener = new THREE.AudioListener();
+/* const listener = new THREE.AudioListener();
 currentCamera.add(listener);
 const sound = new THREE.Audio(listener);
 const audioLoader = new THREE.AudioLoader();
@@ -68,7 +68,7 @@ audioLoader.load('/OuterWilds.mp3', (buffer) => {
     sound.setVolume(0.3); 
     sound.play(); 
 }); 
- 
+  */
 const ambientLight = new THREE.AmbientLight( 0x555555,1 );
 ambientLight.shadow = true;
 scene.add( ambientLight );
