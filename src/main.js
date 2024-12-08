@@ -600,7 +600,7 @@ function animate(){
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
-    windowMesh.position.set(bodyPhisical.position.x + 2,bodyPhisical.position.y+0.6, bodyPhisical.position.z + 4.5);
+    windowMesh.position.set(bodyPhisical.position.x + 2,bodyPhisical.position.y+0.5, bodyPhisical.position.z + 4.6);
 
     CubeCamera.position.copy(windowMesh.position);
     CubeCamera.update(renderer,scene);
