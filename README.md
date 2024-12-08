@@ -39,4 +39,12 @@ Tecla `5` : Cámara lateral izquierda
 
 Tecla `6` : Cámara lateral derecha
 
+Tecla `+` : Zoom In
+
+Tecla `-` : Zoom Out
+
+### Iluminación
+
+Utilice `l` para encender y apagar las luces del vehículo
+
 
