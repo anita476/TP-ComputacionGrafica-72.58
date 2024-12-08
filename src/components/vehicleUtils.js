@@ -19,9 +19,12 @@ const textureCube = new THREE.CubeTextureLoader().load( [
 ] );
 textureCube.mapping = THREE.CubeRefractionMapping;
 const materialRef = new THREE.MeshPhongMaterial({
-    color: 0xffffff, 
-    envMap: textureCube, 
-    refractionRatio: 0.98
+    color: 0xFFFFFF,
+    envMap: textureCube,
+    envMapIntensity: 1.5,
+    refractionRatio: 0.7,
+    reflectivity: 0.8
+    
 });
 
 const phongSettings = {

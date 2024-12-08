@@ -22,6 +22,7 @@ let click = 0;
 let model;
 let legsDown = 1;
 let lightsOn = 1;
+const zoomFactor = 0.5;
 const width = 400;
 const height = 400;
 const scene = new THREE.Scene();
@@ -339,6 +340,14 @@ function onKeyDown(event) {
             body.turnLightsOn();
             lightsOn = 1;
         }
+    }
+    if(event.key == '+'){
+        currentCamera.zoom += zoomFactor;
+        currentCamera.updateProjectionMatrix();
+    }
+    if(event.key == '-'){
+        currentCamera.zoom -= zoomFactor;
+        currentCamera.updateProjectionMatrix();
     }
 }
 window.addEventListener('keydown', onKeyDown);
