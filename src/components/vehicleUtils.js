@@ -17,14 +17,11 @@ const textureCube = new THREE.CubeTextureLoader().load( [
     'env/nz.jpg'
 
 ] );
-textureCube.mapping = THREE.CubeReflectionMapping;
-const materialRef = new THREE.MeshStandardMaterial({
-    color: 0xFFFFF0,
-    emissive: 0x000000,
-    metalness: 0.9,  // Increase for a more reflective surface
-    roughness:0.1,
-    envMap: textureCube,
-    envMapIntensity: 1,
+textureCube.mapping = THREE.CubeRefractionMapping;
+const materialRef = new THREE.MeshPhongMaterial({
+    color: 0xffffff, 
+    envMap: textureCube, 
+    refractionRatio: 0.98
 });
 
 const phongSettings = {

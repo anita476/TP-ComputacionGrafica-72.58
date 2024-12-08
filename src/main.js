@@ -68,17 +68,6 @@ scene.add(helper)
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
 
-/* const listener = new THREE.AudioListener();
-currentCamera.add(listener);
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load('/OuterWilds.mp3', (buffer) => {
-    sound.setBuffer(buffer);
-    sound.setLoop(true); 
-    sound.setVolume(0.3); 
-    sound.play(); 
-}); 
-  */
 const ambientLight = new THREE.AmbientLight( 0x555555,1 );
 ambientLight.shadow = true;
 scene.add( ambientLight );
