@@ -8,20 +8,24 @@ bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
 bumpTexture.repeat.set(1, 1);
 
 
-const glassTextLoader = new THREE.TextureLoader();
-const glassTexture = glassTextLoader.load('glass.jpg');
-glassTexture.wrapS = glassTexture.wrapT = THREE.RepeatWrapping;
-glassTexture.repeat.set(1, 1);
-const materialRef = new THREE.MeshPhongMaterial({
-    color: 0xf00000,
-    emissive: 0x000000,
-    specular: 0xffffff,
-    shininess: 0.1,
-    vertexColors:true,
-    map: glassTexture,
-    reflectivity:1,
-  }); 
+const textureCube = new THREE.CubeTextureLoader().load( [
+    'env/px.jpg',
+    'env/nx.jpg',
+    'env/py.jpg',
+    'env/ny.jpg',
+    'env/pz.jpg',
+    'env/nz.jpg'
 
+] );
+textureCube.mapping = THREE.CubeReflectionMapping;
+const materialRef = new THREE.MeshStandardMaterial({
+    color: 0xFFFFF0,
+    emissive: 0x000000,
+    metalness: 0.9,  // Increase for a more reflective surface
+    roughness:0.1,
+    envMap: textureCube,
+    envMapIntensity: 1,
+});
 
 const phongSettings = {
         color: 0x242424,

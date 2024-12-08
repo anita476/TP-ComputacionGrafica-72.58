@@ -6,7 +6,16 @@ import { createStars} from './components/planetUtils.js';
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
 
+const textureCube = new THREE.CubeTextureLoader().load( [
+    '/env/px.png',
+    '/env/nx.png',
+    '/env/py.png',
+    '/env/ny.png',
+    '/env/pz.png',
+    '/env/nz.png'
+]);
 
+textureCube.mapping = THREE.CubeRefractionMapping;
 let bladesHorizontal = true;
 let retractedTurbines = false;
 let click = 0;
@@ -21,7 +30,7 @@ scene.fog = new THREE.FogExp2(0xAAAAAA, 0.002);
 const simplex = new SimplexNoise();
 
 
-
+scene.background = textureCube;
 //Create cameras
 const rearCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
     rearCamera.position.set(1,2,-3);
