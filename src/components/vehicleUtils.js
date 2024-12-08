@@ -1,31 +1,12 @@
 import * as THREE from 'three';
 import { Turbine } from './Turbine';
 import { bumpMap, Mesh } from 'three/webgpu';
-import { EXRLoader } from 'three/examples/jsm/Addons.js';
+
 const textureLoader = new THREE.TextureLoader();
 const bumpTexture = textureLoader.load('metal.jpg');
 bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
 bumpTexture.repeat.set(1, 1);
 
-
-const textureCube = new THREE.CubeTextureLoader().load( [
-    'env/px.jpg',
-    'env/nx.jpg',
-    'env/py.jpg',
-    'env/ny.jpg',
-    'env/pz.jpg',
-    'env/nz.jpg'
-
-] );
-textureCube.mapping = THREE.CubeRefractionMapping;
-const materialRef = new THREE.MeshPhongMaterial({
-    color: 0xFFFFFF,
-    envMap: textureCube,
-    envMapIntensity: 1.5,
-    refractionRatio: 0.7,
-    reflectivity: 0.8
-    
-});
 
 const phongSettings = {
         color: 0x242424,
@@ -268,15 +249,7 @@ export function createBody() {
     windshieldFront.position.x = bodyHeight/2;
     windshieldFront.position.y -= bodyHeight/2;
 
-
-    const windshieldWindow = new THREE.Mesh(new THREE.BoxGeometry((totalBodyLength-bodyHeight), (bodyHeight/2), 0.05), materialRef);
-    windshieldWindow.position.copy(windshieldFront.position);
-    windshieldWindow.position.x += bodyHeight/2;
-    windshieldWindow.position.y += bodyHeight/2 + 0.05* 4;
-    windshieldWindow.position.z -= bodyHeight/8 + 0.05 * 2;
-    windshieldWindow.rotateX(-Math.PI/4);
     bodyGroup.add(windshieldFront); 
-    bodyGroup.add(windshieldWindow);
 
     //side windows 
     const windowShape = new THREE.Shape();

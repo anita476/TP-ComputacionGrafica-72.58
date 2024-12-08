@@ -16,6 +16,7 @@ const textureCube = new THREE.CubeTextureLoader().load( [
 ]);
 
 textureCube.mapping = THREE.CubeRefractionMapping;
+
 let bladesHorizontal = true;
 let retractedTurbines = false;
 let click = 0;
@@ -32,6 +33,16 @@ const simplex = new SimplexNoise();
 
 
 scene.background = textureCube;
+
+const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(512, {
+    format: THREE.RGBFormat,
+    generateMipmaps: true,
+    minFilter: THREE.LinearMipMapLinearFilter,
+    magFilter: THREE.LinearFilter,
+});
+
+
+
 //Create cameras
 const rearCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
     rearCamera.position.set(1,2,-3);
@@ -44,7 +55,9 @@ const bottomCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window
 const lateralCameraLeft = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     lateralCameraLeft.position.set(5,1,1);
 const lateralCameraRight = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-lateralCameraRight.position.set(-3,1,1);
+lateralCameraRight.position.set(-3,1,1); 
+
+const CubeCamera =new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
 
 
 let currentCamera = rearCamera;
@@ -105,6 +118,7 @@ light3.shadow.camera.far = 1000;
 
 light3.shadow.mapSize.width = 2048; 
 light3.shadow.mapSize.height = 2048;
+
 
 
 
@@ -370,6 +384,22 @@ lateralCameraLeft.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 lateralCameraRight.lookAt(body.position.x+2, body.position.y, body.position.z+1);
 
 
+
+const windowGeo = new THREE.BoxGeometry(2, 1, 0.1);
+const material2 = new THREE.MeshStandardMaterial({
+    color: 0xffffff, 
+    metalness: 0.8,   
+    roughness: 0.05,  
+    envMap: cubeRenderTarget.texture,
+    envMapIntensity: 1,
+});
+
+
+const windowMesh = new THREE.Mesh(windowGeo, material2);
+windowMesh.rotation.x = (-Math.PI/4);
+
+
+scene.add(windowMesh);
 scene.add(body);
  
 const stars = createStars();
@@ -397,7 +427,6 @@ bodyPhisical.linearDamping = 0.5;
 bodyPhisical.angularDamping = 1; 
 
 world.addBody(bodyPhisical);
-
 
 
 bodyPhisical.position.z = 0;
@@ -571,9 +600,16 @@ function animate(){
     body.position.copy(bodyPhisical.position);
     body.quaternion.copy(bodyPhisical.quaternion);
 
+    windowMesh.position.set(bodyPhisical.position.x + 2,bodyPhisical.position.y+0.6, bodyPhisical.position.z + 4.5);
 
-	renderer.render( scene, currentCamera );
+    CubeCamera.position.copy(windowMesh.position);
+    CubeCamera.update(renderer,scene);
+
+
+    renderer.render( scene, currentCamera );
+
 }
+
 
 
 
