@@ -686,7 +686,7 @@ export function createRightDoor(){
     return door2;
 }
 
-export function createInside(){ // maybe a picture afterwards ? 
+export function createInside(){ 
     const inside = new Mesh(new THREE.PlaneGeometry(totalBodyLength/2 , bodyHeight * (2/3)) , new THREE.MeshStandardMaterial({color: 0x000000 , side:THREE.DoubleSide}));
     inside.castShadow  = true;
     inside.receiveShadow = true;
