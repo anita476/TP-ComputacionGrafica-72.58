@@ -77,8 +77,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 
 /* Dont need the helper anymore */
-const helper = new THREE.AxesHelper(1000); 
-scene.add(helper)
+/* const helper = new THREE.AxesHelper(1000); 
+scene.add(helper) */
 const world = new CANNON.World();
 world.gravity.set(0, -12, 0);
 
@@ -143,9 +143,9 @@ function waitForAnimation(action) {
         checkAnimation(); // Start checking
     });
 }
-const riseImpulseStrength = 25;
-const forwardImpulseStrength = 20;
-const sideImpulseStrength = 20;
+const riseImpulseStrength = 30;
+const forwardImpulseStrength = 25;
+const sideImpulseStrength = 25;
 function onKeyDown(event) {
     if(event.key == '1'){
         currentCamera = rearCamera;
@@ -449,7 +449,7 @@ loader.load('/metal_ladder/scene.gltf', (gltf) => {
         if (child.isMesh) {
             child.material.transparent = true;
             child.material.opacity = 0; // Start fully transparent
-            child.castShadow = true;
+            child.castShadow = false;
             child.receiveShadow = true;
         }
     });
