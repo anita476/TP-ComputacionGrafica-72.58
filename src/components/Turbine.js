@@ -2,9 +2,6 @@ import * as THREE from 'three';
 
 import {createBladeGroup , createTurbine } from './vehicleUtils.js';
 
-
-
-
 class Turbine extends THREE.Group{
     constructor(){
         super();

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import {BLLeg, BRLeg, createBackLeft, createBackRight, createBody , createBodyRings, createFrontLeft, createFrontRight, createInside, createLeftDoor, createRightDoor, FLLeg, FRLeg} from './vehicleUtils.js';
-import { exp } from 'three/webgpu';
 
 
 
@@ -37,6 +36,52 @@ class Vehicle extends THREE.Group{
     }
     animationHorizontal(rotationSpeed){
         this.turbines.children.forEach(child => { child.animationHorizontal(rotationSpeed)});
+    }
+
+    turnBackLightGreen(){
+        this.body.traverse((child) => {
+            if (child.isPointLight) {
+              child.color.set(0x25a608);  
+            }
+          });
+    }
+    turnBackLightRed(){
+        this.body.traverse((child) => {
+            if (child.isPointLight) {
+              child.color.set(0xcf1208);  
+            }
+          });
+    }
+    turnBackLightNormal(){
+        this.body.traverse((child) => {
+            if (child.isPointLight) {
+              child.color.set(0xFCF9D9);  
+            }
+          });
+    }
+    turnLightsOff(){
+        this.body.traverse((child)=>{
+            if(child.isPointLight) {
+                child.intensity = 0;
+            }
+        });
+        this.rings.traverse((child)=>{
+            if(child.isPointLight) {
+                child.intensity = 0;
+            }
+        })
+    }
+    turnLightsOn(){
+        this.body.traverse((child)=>{
+            if(child.isPointLight){
+                child.intensity = 0.5;
+            }
+        });
+        this.rings.traverse((child)=>{
+            if(child.isPointLight){
+                child.intensity = 0.5;
+            }
+        })
     }
     animationVertical(rotationSpeed){
         this.turbines.children.forEach(child => { child.animationVertical(rotationSpeed)});

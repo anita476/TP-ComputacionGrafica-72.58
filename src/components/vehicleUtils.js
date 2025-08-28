@@ -1,23 +1,28 @@
 import * as THREE from 'three';
 import { Turbine } from './Turbine';
-import { Mesh } from 'three/webgpu';
+import { bumpMap, Mesh } from 'three/webgpu';
 
 const textureLoader = new THREE.TextureLoader();
-    const textureMetal = textureLoader.load('/metal.jpg');
+const bumpTexture = textureLoader.load('metal.jpg');
+bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+bumpTexture.repeat.set(1, 1);
 
 
-/* provisional settings only! */
 const phongSettings = {
-        //color : 0x696c77,
         color: 0x242424,
-        //emissive : 0x191515,
         emissive: 0x000000,
         specular: 0xf4f0f0,
-        //specular: 0xffffff,
         shininess : 28.5,
         side: THREE.DoubleSide,
         opacity  : 0.88,
-        map: textureMetal
+        bumpMap: bumpTexture,
+        bumpScale: 0.7,
+        
+}
+const lightCapSettings = {
+    color: 0xFFFFFF, 
+    //color : 0xFCF9D9,
+    opacity: 0.6
 }
 //constants for vehicle
 const outerRadius = 1.1;
@@ -32,7 +37,9 @@ const ring1Depth = 0.1/2;
 const ring2Depth = 0.3;
 const girth = 0.10;
 
-
+const lightRadius = 0.1;
+const lightColor =  0xFCF9D9;
+const lightIntensity = 0.5;
 
 
 //Turbine container creation
@@ -62,6 +69,8 @@ export function createTurbine(){
     const wheelGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     const wheelMaterial = new THREE.MeshPhongMaterial(phongSettings);
     const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+    wheel.castShadow = true;
+    wheel.receiveShadow = true;
     //wheel.rotateOnAxis((0,0,0), Math.PI/2);
     wheel.rotateX(Math.PI/2);
 
@@ -73,6 +82,8 @@ export function createTurbine(){
     const axisGeometry = new THREE.ExtrudeGeometry(axisShape, extrudeSettingsAxis);
     const axisMaterial = new THREE.MeshPhongMaterial(phongSettings);
     const axis = new THREE.Mesh(axisGeometry,axisMaterial);
+    axis.castShadow = true;
+    axis.receiveShadow = true;
     axis.rotateX(Math.PI/2);
     const turbineGroup = new THREE.Group();
     turbineGroup.add(wheel);
@@ -88,6 +99,8 @@ const bladeGeometry = createBladeGeometry();
 // Create a material and mesh for the blade
 const bladeMaterial = new THREE.MeshPhongMaterial(phongSettings);
 const propellerBlade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+propellerBlade.castShadow = true;
+propellerBlade.receiveShadow = true;
 
 // Transform the blade to starting point
 propellerBlade.rotation.z = Math.PI /2;
@@ -195,9 +208,22 @@ export function createBody() {
     const material = new THREE.MeshPhongMaterial(
     phongSettings);
     const bodyMesh = new THREE.Mesh(geometry, material);
+    bodyMesh.castShadow = true;
+    bodyMesh.receiveShadow = true;
     const bodyGroup = new THREE.Group;
     bodyGroup.add(bodyMesh);
 
+    const backlight = new THREE.Mesh(new THREE.SphereGeometry(lightRadius), new THREE.MeshStandardMaterial(lightCapSettings));
+    backlight.position.x += totalBodyLength /2 ;
+    backlight.position.z -= bodyDepth/32 - lightRadius * 3 /2;
+    backlight.position.y += bodyHeight/ 2;
+
+
+    const backlightLight = new THREE.PointLight(lightColor,lightIntensity,20,1);
+    backlightLight.position.copy(backlight.position);
+    backlightLight.position.z -= lightRadius*2;
+    bodyGroup.add(backlightLight);
+    bodyGroup.add(backlight);
     
     const windshieldFrontShape = new THREE.Shape();
     windshieldFrontShape.moveTo(0 ,bodyHeight/2,0);
@@ -212,13 +238,17 @@ export function createBody() {
         
     };
     const windshieldFrontGeo = new THREE.ExtrudeGeometry(windshieldFrontShape, extrudeSettingsWindshield);
-    const materialWindshield = new THREE.MeshPhongMaterial(
+    const materialWindshield = new THREE.MeshPhongMaterial( //make glass
     phongSettings);
     const windshieldFront = new THREE.Mesh(windshieldFrontGeo, materialWindshield);
+
+    windshieldFront.castShadow = true;
+    windshieldFront.receiveShadow = true;
     windshieldFront.rotateY(Math.PI/2);
     windshieldFront.position.z = bodyDepth+bodyHeight/2;
     windshieldFront.position.x = bodyHeight/2;
     windshieldFront.position.y -= bodyHeight/2;
+
     bodyGroup.add(windshieldFront); 
 
     //side windows 
@@ -232,6 +262,8 @@ export function createBody() {
     const windowMat = new THREE.MeshPhongMaterial(phongSettings);
 
     const window1 = new THREE.Mesh(windowGeo,windowMat);
+    window1.castShadow = true;
+    window1.receiveShadow = true;
     window1.rotateY(Math.PI/4);
     window1.rotateX(-Math.PI/5);
     window1.position.z += totalBodyLength + bodyHeight/4;
@@ -240,6 +272,8 @@ export function createBody() {
     bodyGroup.add(window1); 
 
     const window2 = new THREE.Mesh(windowGeo, windowMat);
+    window2.castShadow = true;
+    window2.receiveShadow = true;
     window2.position.z += totalBodyLength + bodyHeight/4;
     window2.rotateY(-Math.PI /4);
     window2.rotateX(-Math.PI/5);
@@ -248,6 +282,8 @@ export function createBody() {
     bodyGroup.add(window2);
 
     const window3 = new THREE.Mesh(windowGeo,windowMat);
+    window3.castShadow = true;
+    window3.receiveShadow = true;
     
     window3.position.z += totalBodyLength + bodyHeight/4;
     window3.rotateZ(Math.PI);
@@ -258,6 +294,8 @@ export function createBody() {
     bodyGroup.add(window3);
 
     const window4 = new THREE.Mesh(windowGeo, windowMat);
+    window4.castShadow = true;
+    window4.receiveShadow = true;
     window4.position.z += totalBodyLength + bodyHeight/4;
     window4.rotateZ(Math.PI);
     window4.rotateY(-Math.PI/4);
@@ -311,16 +349,79 @@ export function createBodyRings(){
         const geometry1 = new THREE.ExtrudeGeometry(outerShape, extrudeSettings);
         const material = new THREE.MeshPhongMaterial(phongSettings);
         const ring1 = new THREE.Mesh(geometry1, material);
+        ring1.castShadow = true;
+        ring1.receiveShadow = true;
         ring1.position.x -= girth;
         ring1.position.z += (totalBodyLength - ring1Depth*4);
 
+        // add lights
+        const lightFixture1r1 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius),new THREE.MeshPhongMaterial(phongSettings));
+        lightFixture1r1.position.set(ring1.position.x + bodyHeight/2 , ring1.position.y + bodyHeight/ 2 + lightRadius, ring1.position.z + ring1Depth);
+        const lightCap1r1 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius,16,16,0,Math.PI), new THREE.MeshStandardMaterial(lightCapSettings));
+        lightCap1r1.position.copy(lightFixture1r1.position);
+        lightCap1r1.position.z += lightRadius/5;
+
+        const spotLight1 = new THREE.PointLight(lightColor, lightIntensity,20);
+        spotLight1.position.copy(lightCap1r1.position);
+        spotLight1.position.z += lightRadius*2;
+
+        const lightFixture2r1 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius),new THREE.MeshPhongMaterial(phongSettings));
+        lightFixture2r1.position.set(ring1.position.x + totalBodyLength - bodyHeight/2 + lightRadius*2,  ring1.position.y + bodyHeight/ 2 + lightRadius, ring1.position.z + ring1Depth);
+        const lightCap2r1 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius,16,16,0,Math.PI), new THREE.MeshStandardMaterial(lightCapSettings));
+        lightCap2r1.position.copy(lightFixture2r1.position);
+        lightCap2r1.position.z += lightRadius/5;
+
+        const spotLight2 = new THREE.PointLight(lightColor, lightIntensity,20);
+        spotLight2.position.copy(lightCap2r1.position);
+        spotLight2.position.z += lightRadius*2;
+
+
         const geometry2 = new THREE.ExtrudeGeometry(outerShape,extrudeSettings2);
         const ring2 = new THREE.Mesh(geometry2,material);
+        ring2.castShadow = true;
+        ring2.receiveShadow = true;
         ring2.position.x -= girth;
         ring2.position.z += 0.2;
+
+        // add lights
+        const lightFixture1r2 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius),new THREE.MeshPhongMaterial(phongSettings));
+        lightFixture1r2.position.set(ring2.position.x + bodyHeight/2 , ring2.position.y + bodyHeight/ 2 + lightRadius, ring2.position.z + ring2Depth);
+        const lightCap1r2 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius,16,16,0,Math.PI), new THREE.MeshStandardMaterial(lightCapSettings));
+        lightCap1r2.position.copy(lightFixture1r2.position);
+        lightCap1r2.position.z += lightRadius/5;
+
+        const spotLight3 = new THREE.PointLight(lightColor, lightIntensity,20);
+        spotLight3.position.copy(lightCap1r2.position);
+        spotLight3.position.z += lightRadius*2;
+
+        const lightFixture2r2 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius),new THREE.MeshPhongMaterial(phongSettings));
+        lightFixture2r2.position.set(ring2.position.x + totalBodyLength - bodyHeight/2 + lightRadius*2,  ring2.position.y + bodyHeight/ 2 + lightRadius, ring2.position.z + ring2Depth);
+        const lightCap2r2 = new THREE.Mesh(new THREE.SphereGeometry(lightRadius,16,16,0,Math.PI), new THREE.MeshStandardMaterial(lightCapSettings));
+        lightCap2r2.position.copy(lightFixture2r2.position);
+        lightCap2r2.position.z += lightRadius/5;
+
+        const spotLight4 = new THREE.PointLight(lightColor, lightIntensity,20);
+        spotLight4.position.copy(lightCap2r2.position);
+        spotLight4.position.z += lightRadius*2;
+
+
+
+
         const ringGroup = new THREE.Group();
         ringGroup.add(ring1);
         ringGroup.add(ring2);
+        ringGroup.add(lightFixture1r1);
+        ringGroup.add(lightFixture2r1);
+        ringGroup.add(lightCap1r1);
+        ringGroup.add(lightCap2r1);
+        ringGroup.add(spotLight1);     
+        ringGroup.add(spotLight2);  
+        ringGroup.add(lightFixture1r2);
+        ringGroup.add(lightFixture2r2);
+        ringGroup.add(lightCap1r2);
+        ringGroup.add(lightCap2r2);
+        ringGroup.add(spotLight3);     
+        ringGroup.add(spotLight4);  
         return ringGroup;
 }
 
@@ -331,6 +432,8 @@ export function createFrontLeft(){
     const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
     const coneMat = new THREE.MeshPhongMaterial(phongSettings);
     const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.castShadow = true;
+    turbineSupport1.receiveShadow = true;
     turbineSupport1.rotateZ(Math.PI/2);
     turbineSupport1.position.x += ((outerRadius )* 7 - girth*3);
     turbine1.add(turbineSupport1);
@@ -366,6 +469,8 @@ export function createBackLeft (){
     const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
     const coneMat = new THREE.MeshPhongMaterial(phongSettings);
     const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.castShadow = true;
+    turbineSupport1.receiveShadow = true;
     turbineSupport1.rotateZ(Math.PI/2);
     turbineSupport1.position.x += ((outerRadius )* 7 - girth*3);
     turbine1.add(turbineSupport1);
@@ -383,6 +488,8 @@ export function createFrontRight(){
     const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
     const coneMat = new THREE.MeshPhongMaterial(phongSettings);
     const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.castShadow = true;
+    turbineSupport1.receiveShadow = true;
     turbineSupport1.rotateZ(-Math.PI/2);
     turbineSupport1.position.x -= ((outerRadius )* 7 - girth*3);
     turbine1.add(turbineSupport1);
@@ -419,6 +526,8 @@ export function createBackRight(){
     const cone = new THREE.ConeGeometry(wheelThickness/2/turbine1.scale.x, (outerRadius)/turbine1.scale.x,32,1,false,0,Math.PI*2);
     const coneMat = new THREE.MeshPhongMaterial(phongSettings);
     const turbineSupport1 = new THREE.Mesh(cone,coneMat);
+    turbineSupport1.castShadow = true;
+    turbineSupport1.receiveShadow = true;
     turbineSupport1.rotateZ(-Math.PI/2);
     turbineSupport1.position.x -= ((outerRadius )* 7 - girth*3);
     turbine1.add(turbineSupport1);
@@ -437,11 +546,15 @@ function createlegGroup(){
     const footGeo = new THREE.LatheGeometry( points,4,0,2*Math.PI);
     const material = new THREE.MeshPhongMaterial( phongSettings );
     const foot = new THREE.Mesh( footGeo, material );
+    foot.castShadow = true;
+    foot.receiveShadow = true;
     foot.rotateY(Math.PI/4);
     foot.rotateZ(Math.PI);
     foot.position.y -= (points[9].x - points[0].x); // my x axis is now y axis because i rotated the object
     const legGeo = new THREE.BoxGeometry(7,2*(points[9].y - points[0].y),7,1,1,1);
     const leg = new THREE.Mesh(legGeo,material);
+    leg.castShadow = true;
+    leg.receiveShadow = true;
     leg.position.y += (points[9].y - points[0].y);
     const legGroup = new THREE.Group();
 
@@ -510,6 +623,8 @@ export function BRLeg(){
 
 export function createLeftDoor(){
     const door1 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
+    door1.castShadow = true;
+    door1.receiveShadow = true;
     door1.position.x += (totalBodyLength/2 - totalBodyLength/8) ;
     const frame = totalBodyLength/(4*5);
     //define door opening animation
@@ -540,6 +655,8 @@ export function createLeftDoor(){
 }
 export function createRightDoor(){
     const door2 = new Mesh(new THREE.BoxGeometry(totalBodyLength/4,bodyHeight * (2/3),0.1), new THREE.MeshPhongMaterial(phongSettings));
+    door2.castShadow = true;
+    door2.receiveShadow = true;
     const frame = totalBodyLength/(4*5);
     door2.position.x += (totalBodyLength/2 + totalBodyLength/8) ;
     //define door opening animation
@@ -569,8 +686,10 @@ export function createRightDoor(){
     return door2;
 }
 
-export function createInside(){ // maybe a picture afterwards ? 
+export function createInside(){ 
     const inside = new Mesh(new THREE.PlaneGeometry(totalBodyLength/2 , bodyHeight * (2/3)) , new THREE.MeshStandardMaterial({color: 0x000000 , side:THREE.DoubleSide}));
+    inside.castShadow  = true;
+    inside.receiveShadow = true;
     inside.position.x += totalBodyLength/2;
     inside.position.z -= 0.001;
     return inside;
